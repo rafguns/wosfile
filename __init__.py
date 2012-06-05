@@ -1,74 +1,102 @@
 import codecs
-import csv
+
+from wos.unicodecsv import DictReader
 
 # Based on http://images.webofknowledge.com/WOK46/help/WOS/h_fieldtags.html
 # Format: (Abbreviation, Full label, Iterable?)
 headings = (
-        ("AB", "Abstract", False),
-        ("AF", "Author Full Name", True),
-        ("AR", "Article Number", False),
-        ("AU", "Authors", True),
-        ("BA", "BA", False), # Unknown
-        ("BE", "Book Editors", True),
-        ("BN", "ISBN", False),
-        ("BP", "Beginning Page", False),
-        ("BS", "Book Series Subtitle", False),
-        ("C1", "Author Address", True),
-        ("CA", "Group Authors", False),
-        ("CL", "Conference Location", False),
-        ("CR", "Cited References", True),
-        ("CT", "Conference Title", False),
-        ("CY", "Conference Date", False),
-        ("DE", "Author Keywords", True),
-        ("DI", "Digital Object Identifier (DOI)", False),
-        ("DT", "Document Type", False),
-        ("D2", "D2", False), # Unknown
-        ("ED", "Editors", False),
-        ("EF", "End of File", False),
-        ("EM", "E-mail Address", True),
-        ("EP", "Ending Page", False),
-        ("ER", "End of Record", False),
-        ("FU", "Funding Agency and Grant Number", False),
-        ("FX", "Funding Text", False),
-        ("GA", "Document Delivery Number", False),
-        ("GP", "GP", False), # unknown
-        ("HO", "Conference Host", False),
-        ("ID", "Keywords Plus", True),
-        ("IS", "Issue", False),
-        ("J9", "29-Character Source Abbreviation", False),
-        ("JI", "ISO Source Abbreviation", False),
-        ("LA", "Language", False),
-        ("NR", "Cited Reference Count", False),
-        ("PA", "Publisher Address", False),
-        ("PD", "Publication Date", False),
-        ("PG", "Page Count", False),
-        ("PI", "Publisher City", False),
-        ("PN", "Part Number", False),
-        ("PT", "Publication type", False),
-        ("PU", "Publisher", False),
-        ("PY", "Year Published", False),
-        ("P2", "P2", False), # Unknown
-        ("RP", "Reprint Address", False),
-        ("SC", "Subject Category", True),
-        ("SE", "Book Series Title", False),
-        ("SI", "Special Issue", False),
-        ("SN", "ISSN", False),
-        ("SO", "Publication Name", False),
-        ("SP", "Conference Sponsors", False),
-        ("SU", "Supplement", False),
-        ("TC", "Times Cited", False),
-        ("TI", "Document Title", False),
-        ("UT", "Unique Article Identifier", False),
-        ("VL", "Volume", False),
-        ("WC", "Web of Science Category", True),
-        ("Z9", "Z9", False) # unknown
+        (u"AB", u"Abstract", False),
+        (u"AF", u"Author Full Name", True),
+        (u"AR", u"Article Number", False),
+        (u"AU", u"Authors", True),
+        (u"BA", u"BA", False), # Unknown
+        (u"BE", u"Book Editors", True),
+        (u"BN", u"ISBN", False),
+        (u"BP", u"Beginning Page", False),
+        (u"BS", u"Book Series Subtitle", False),
+        (u"C1", u"Author Address", True),
+        (u"CA", u"Group Authors", False),
+        (u"CL", u"Conference Location", False),
+        (u"CR", u"Cited References", True),
+        (u"CT", u"Conference Title", False),
+        (u"CY", u"Conference Date", False),
+        (u"DE", u"Author Keywords", True),
+        (u"DI", u"Digital Object Identifier (DOI)", False),
+        (u"DT", u"Document Type", False),
+        (u"D2", u"D2", False), # Unknown
+        (u"ED", u"Editors", False),
+        (u"EF", u"End of File", False),
+        (u"EM", u"E-mail Address", True),
+        (u"EP", u"Ending Page", False),
+        (u"ER", u"End of Record", False),
+        (u"FU", u"Funding Agency and Grant Number", False),
+        (u"FX", u"Funding Text", False),
+        (u"GA", u"Document Delivery Number", False),
+        (u"GP", u"GP", False), # unknown
+        (u"HO", u"Conference Host", False),
+        (u"ID", u"Keywords Plus", True),
+        (u"IS", u"Issue", False),
+        (u"J9", u"29-Character Source Abbreviation", False),
+        (u"JI", u"ISO Source Abbreviation", False),
+        (u"LA", u"Language", False),
+        (u"NR", u"Cited Reference Count", False),
+        (u"PA", u"Publisher Address", False),
+        (u"PD", u"Publication Date", False),
+        (u"PG", u"Page Count", False),
+        (u"PI", u"Publisher City", False),
+        (u"PN", u"Part Number", False),
+        (u"PT", u"Publication type", False),
+        (u"PU", u"Publisher", False),
+        (u"PY", u"Year Published", False),
+        (u"P2", u"P2", False), # Unknown
+        (u"RP", u"Re Address", False),
+        (u"SC", u"Subject Category", True),
+        (u"SE", u"Book Series Title", False),
+        (u"SI", u"Special Issue", False),
+        (u"SN", u"ISSN", False),
+        (u"SO", u"Publication Name", False),
+        (u"SP", u"Conference Sponsors", False),
+        (u"SU", u"Supplement", False),
+        (u"TC", u"Times Cited", False),
+        (u"TI", u"Document Title", False),
+        (u"UT", u"Unique Article Identifier", False),
+        (u"VL", u"Volume", False),
+        (u"WC", u"Web of Science Category", True),
+        (u"Z9", u"Z9", False) # unknown
 )
 heading_dict = dict((abbr, full) for abbr, full, _ in headings)
 is_iterable  = dict((abbr, iterable) for abbr, _, iterable in headings)
 
-def read_file(fname, encoding="utf-8-sig", delimiter="\t", **kwargs):
-    with codecs.open(fname, encoding=encoding) as f:
-        reader = csv.DictReader(f, delimiter=delimiter, **kwargs)
+def utf8_file(f):
+
+    encoding = 'utf-8'
+    recoder = lambda f, from_encoding, to_encoding : \
+            codecs.StreamRecoder(f, codecs.getencoder(to_encoding),
+                                 codecs.getdecoder(to_encoding),
+                                 codecs.getreader(from_encoding),
+                                 codecs.getwriter(to_encoding))
+
+    sniff = f.read(10)
+
+    if sniff.startswith(codecs.BOM_UTF16_LE):
+        f.seek(len(codecs.BOM_UTF16_LE))
+        return recoder(f, 'utf-16-le', encoding)
+
+    if sniff.startswith(codecs.BOM_UTF16_BE):
+        f.seek(len(codecs.BOM_UTF16_BE))
+        return recoder(f, 'utf-16-be', encoding)
+
+    if sniff.startswith(codecs.BOM_UTF8):
+        f.seek(len(codecs.BOM_UTF8))
+    return f
+
+def read_file(fname, encoding="utf-8", delimiter="\t", **kwargs):
+    """
+    Read WoS CSV file recoding (if necessary) to UTF-8
+    """
+    with open(fname) as f:
+        f = utf8_file(f)
+        reader = DictReader(f, delimiter=delimiter, encoding=encoding, **kwargs)
         for record in reader:
             yield record
 
@@ -76,17 +104,17 @@ def get_id(rec):
     import re
 
     first_author = re.sub(r'(.*), (.*)', r'\1 \2', rec["AU"][0])
-    year         = rec["PY"]
-    journal      = rec.get("J9", rec.get("BS", rec.get("SO")))
-    volume       = "V" + rec["VL"] if "VL" in rec else None
-    page         = "P" + rec["BP"] if "BP" in rec else None
-    doi          = "DOI " + rec["DI"] if "DI" in rec else None
+    year         = rec[u"PY"]
+    journal      = rec.get(u"J9", rec.get(u"BS", rec.get(u"SO")))
+    volume       = u"V" + rec[u"VL"] if u"VL" in rec else None
+    page         = u"P" + rec[u"BP"] if u"BP" in rec else None
+    doi          = u"DOI " + rec[u"DI"] if u"DI" in rec else None
 
     itemlist = [item for item in (first_author, year, journal, volume, page, doi)\
                 if item]
-    return ", ".join(itemlist)
+    return u", ".join(itemlist)
 
-def parse_record(rec, delimiter="; ", full_labels=True, skip_empty=True):
+def parse_record(rec, delimiter="; ", full_labels=False, skip_empty=True):
     parsed_rec = {}
 
     for k, v in rec.iteritems():
@@ -98,16 +126,15 @@ def parse_record(rec, delimiter="; ", full_labels=True, skip_empty=True):
             continue
         if is_iterable[k]:
             v = v.split(delimiter)
-        #if full_labels:
-        #    k = heading_dict[k]
+        if full_labels:
+            k = heading_dict[k]
         parsed_rec[k] = v
 
     rec_id = get_id(parsed_rec)
 
     return rec_id, parsed_rec
 
-def read_parse_file(fname, encoding="utf-8-sig", delimiter="\t",
-                        subdelimiter="; ", full_labels=False, skip_empty=True,
-                        **kwargs):
+def read_parse_file(fname, encoding="utf-8", delimiter="\t", subdelimiter="; ",
+                    full_labels=False, skip_empty=True, **kwargs):
     for rec in read_file(fname, encoding, delimiter, **kwargs):
         yield parse_record(rec, subdelimiter, full_labels, skip_empty)
