@@ -1,6 +1,10 @@
 import codecs
+import logging
 
 from wos.unicodecsv import DictReader
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Based on http://images.webofknowledge.com/WOK46/help/WOS/h_fieldtags.html
 # Format: (Abbreviation, Full label, Iterable?)
@@ -68,6 +72,7 @@ heading_dict = dict((abbr, full) for abbr, full, _ in headings)
 is_iterable  = dict((abbr, iterable) for abbr, _, iterable in headings)
 
 def utf8_file(f):
+    """Make sure that f is a UTF-8 encoded file"""
 
     encoding = 'utf-8'
     recoder = lambda f, from_encoding, to_encoding : \
@@ -79,15 +84,21 @@ def utf8_file(f):
     sniff = f.read(10)
 
     if sniff.startswith(codecs.BOM_UTF16_LE):
+        logger.debug("File '%s' encoded as UTF-16-LE" % f.name)
         f.seek(len(codecs.BOM_UTF16_LE))
         return recoder(f, 'utf-16-le', encoding)
 
     if sniff.startswith(codecs.BOM_UTF16_BE):
+        logger.debug("File '%s' encoded as UTF-16-BE" % f.name)
         f.seek(len(codecs.BOM_UTF16_BE))
         return recoder(f, 'utf-16-be', encoding)
 
     if sniff.startswith(codecs.BOM_UTF8):
+        logger.debug("File '%s' encoded as UTF-8 with BOM" % f.name)
         f.seek(len(codecs.BOM_UTF8))
+    
+    logger.debug("File '%s' encoded as UTF-8 without BOM" % f.name)
+    f.seek(0)
     return f
 
 def read_file(fname, encoding="utf-8", delimiter="\t", **kwargs):
@@ -95,6 +106,7 @@ def read_file(fname, encoding="utf-8", delimiter="\t", **kwargs):
     Read WoS CSV file recoding (if necessary) to UTF-8
     """
     with open(fname) as f:
+        print fname
         f = utf8_file(f)
         reader = DictReader(f, delimiter=delimiter, encoding=encoding, **kwargs)
         for record in reader:
@@ -103,7 +115,7 @@ def read_file(fname, encoding="utf-8", delimiter="\t", **kwargs):
 def get_id(rec):
     import re
 
-    first_author = re.sub(r'(.*), (.*)', r'\1 \2', rec["AU"][0])
+    first_author = re.sub(r'(.*), (.*)', r'\1 \2', rec[u"AU"][0])
     year         = rec[u"PY"]
     journal      = rec.get(u"J9", rec.get(u"BS", rec.get(u"SO")))
     volume       = u"V" + rec[u"VL"] if u"VL" in rec else None
