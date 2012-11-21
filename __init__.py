@@ -1,3 +1,4 @@
+import csv
 import codecs
 import logging
 
@@ -101,15 +102,17 @@ def utf8_file(f):
     f.seek(0)
     return f
 
-def read(fname, encoding="utf-8", delimiter="\t", **kwargs):
+def read(fobj, delimiter="\t", quoting=csv.QUOTE_NONE, **kwargs):
     """
     Read WoS CSV file recoding (if necessary) to UTF-8
     """
-    with open(fname) as f:
-        f = utf8_file(f)
-        reader = DictReader(f, delimiter=delimiter, encoding=encoding, **kwargs)
-        for record in reader:
-            yield record
+    # Make sure we have a file and not a file name
+    f = open(fobj) if not hasattr(fobj, 'read') else f
+    f = utf8_file(f)
+    reader = DictReader(f, delimiter=delimiter, quoting=quoting, **kwargs)
+    for record in reader:
+        yield record
+    f.close()
 
 def get_id(rec):
     import re
@@ -145,7 +148,7 @@ def parse(rec, delimiter="; ", full_labels=False, skip_empty=True):
 
     return rec_id, parsed_rec
 
-def read_parse(fname, encoding="utf-8", delimiter="\t", subdelimiter="; ",
-                    full_labels=False, skip_empty=True, **kwargs):
-    for rec in read(fname, encoding, delimiter, **kwargs):
+def read_parse(fobj, subdelimiter="; ", full_labels=False,
+               skip_empty=True, **kwargs):
+    for rec in read(fobj, **kwargs):
         yield parse(rec, subdelimiter, full_labels, skip_empty)
