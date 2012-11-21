@@ -101,7 +101,7 @@ def utf8_file(f):
     f.seek(0)
     return f
 
-def read_file(fname, encoding="utf-8", delimiter="\t", **kwargs):
+def read(fname, encoding="utf-8", delimiter="\t", **kwargs):
     """
     Read WoS CSV file recoding (if necessary) to UTF-8
     """
@@ -125,7 +125,7 @@ def get_id(rec):
                 if item]
     return u", ".join(itemlist)
 
-def parse_record(rec, delimiter="; ", full_labels=False, skip_empty=True):
+def parse(rec, delimiter="; ", full_labels=False, skip_empty=True):
     parsed_rec = {}
 
     for k, v in rec.iteritems():
@@ -145,7 +145,7 @@ def parse_record(rec, delimiter="; ", full_labels=False, skip_empty=True):
 
     return rec_id, parsed_rec
 
-def read_parse_file(fname, encoding="utf-8", delimiter="\t", subdelimiter="; ",
+def read_parse(fname, encoding="utf-8", delimiter="\t", subdelimiter="; ",
                     full_labels=False, skip_empty=True, **kwargs):
-    for rec in read_file(fname, encoding, delimiter, **kwargs):
-        yield parse_record(rec, subdelimiter, full_labels, skip_empty)
+    for rec in read(fname, encoding, delimiter, **kwargs):
+        yield parse(rec, subdelimiter, full_labels, skip_empty)
