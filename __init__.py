@@ -3,7 +3,6 @@ import logging
 
 from wos.unicodecsv import DictReader
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Based on http://images.webofknowledge.com/WOK46/help/WOS/h_fieldtags.html
