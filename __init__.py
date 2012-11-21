@@ -96,6 +96,7 @@ def utf8_file(f):
     if sniff.startswith(codecs.BOM_UTF8):
         logger.debug("File '%s' encoded as UTF-8 with BOM" % f.name)
         f.seek(len(codecs.BOM_UTF8))
+        return f
     
     logger.debug("File '%s' encoded as UTF-8 without BOM" % f.name)
     f.seek(0)
@@ -106,7 +107,6 @@ def read_file(fname, encoding="utf-8", delimiter="\t", **kwargs):
     Read WoS CSV file recoding (if necessary) to UTF-8
     """
     with open(fname) as f:
-        print fname
         f = utf8_file(f)
         reader = DictReader(f, delimiter=delimiter, encoding=encoding, **kwargs)
         for record in reader:
