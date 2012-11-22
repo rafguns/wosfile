@@ -149,11 +149,12 @@ def parse(rec, delimiter="; ", full_labels=False, skip_empty=True):
             continue
         if is_iterable[k]:
             v = v.split(delimiter)
-        if full_labels:
-            k = heading_dict[k]
         parsed_rec[k] = v
 
     rec_id = get_id(parsed_rec)
+    
+    if full_labels:
+        parsed_rec = {heading_dict[k]: v for k, v in parsed_rec.iteritems()}
 
     return rec_id, parsed_rec
 
