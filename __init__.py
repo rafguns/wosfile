@@ -107,12 +107,21 @@ def read(fobj, delimiter="\t", quoting=csv.QUOTE_NONE, **kwargs):
     Read WoS CSV file recoding (if necessary) to UTF-8
     """
     # Make sure we have a file and not a file name
-    f = open(fobj) if not hasattr(fobj, 'read') else f
-    f = utf8_file(f)
-    reader = DictReader(f, delimiter=delimiter, quoting=quoting, **kwargs)
-    for record in reader:
-        yield record
-    f.close()
+    if not hasattr(fobj, 'read'):
+        f = open(fobj)
+        close_f = True
+    else:
+        f = fobj
+        close_f = False
+
+    try:
+        f = utf8_file(f)
+        reader = DictReader(f, delimiter=delimiter, quoting=quoting, **kwargs)
+        for record in reader:
+            yield record
+    finally:
+        if close_f:
+            f.close()
 
 def get_id(rec):
     import re
