@@ -123,24 +123,24 @@ def read(fobj, delimiter="\t", quoting=csv.QUOTE_NONE, **kwargs):
         if close_f:
             f.close()
 
-def get_id(rec):
+def record_id(record):
     import re
 
-    first_author = re.sub(r'(.*), (.*)', r'\1 \2', rec[u"AU"][0])
-    year         = rec[u"PY"]
-    journal      = rec.get(u"J9", rec.get(u"BS", rec.get(u"SO")))
-    volume       = u"V" + rec[u"VL"] if u"VL" in rec else None
-    page         = u"P" + rec[u"BP"] if u"BP" in rec else None
-    doi          = u"DOI " + rec[u"DI"] if u"DI" in rec else None
+    first_author = re.sub(r'(.*), (.*)', r'\1 \2', record[u"AU"][0])
+    year         = record[u"PY"]
+    journal      = record.get(u"J9", record.get(u"BS", record.get(u"SO")))
+    volume       = u"V" + record[u"VL"] if u"VL" in record else None
+    page         = u"P" + record[u"BP"] if u"BP" in record else None
+    doi          = u"DOI " + record[u"DI"] if u"DI" in record else None
 
     itemlist = [item for item in (first_author, year, journal, volume, page, doi)\
                 if item]
     return u", ".join(itemlist)
 
-def parse(rec, delimiter="; ", full_labels=False, skip_empty=True):
-    parsed_rec = {}
+def parse(record, delimiter="; ", full_labels=False, skip_empty=True):
+    parsed_record = {}
 
-    for k, v in rec.iteritems():
+    for k, v in record.iteritems():
         if skip_empty and not v:
             continue
         # Since WoS files have a spurious tab at the end of each line, we may
@@ -149,16 +149,16 @@ def parse(rec, delimiter="; ", full_labels=False, skip_empty=True):
             continue
         if is_iterable[k]:
             v = v.split(delimiter)
-        parsed_rec[k] = v
+        parsed_record[k] = v
 
-    rec_id = get_id(parsed_rec)
+    rec_id = record_id(parsed_record)
     
     if full_labels:
-        parsed_rec = {heading_dict[k]: v for k, v in parsed_rec.iteritems()}
+        parsed_record = {heading_dict[k]: v for k, v in parsed_record.iteritems()}
 
-    return rec_id, parsed_rec
+    return rec_id, parsed_record
 
 def read_parse(fobj, subdelimiter="; ", full_labels=False,
                skip_empty=True, **kwargs):
-    for rec in read(fobj, **kwargs):
-        yield parse(rec, subdelimiter, full_labels, skip_empty)
+    for record in read(fobj, **kwargs):
+        yield parse(record, subdelimiter, full_labels, skip_empty)
