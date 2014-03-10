@@ -1,4 +1,3 @@
-import csv
 import codecs
 import logging
 
@@ -69,13 +68,18 @@ headings = (
     (u"WC", u"Web of Science Category", True),
     (u"Z9", u"Z9", False)  # unknown
 )
-heading_dict = dict((abbr, full) for abbr, full, _ in headings)
-is_iterable = dict((abbr, iterable) for abbr, _, iterable in headings)
+heading_dict = {abbr: full for abbr, full, _ in headings}
+is_iterable = {abbr: iterable for abbr, _, iterable in headings}
 
 
 def utf8_file(f):
-    """Make sure that f is a UTF-8 encoded file"""
+    """Make sure that f is a UTF-8 encoded file
 
+    :param f: Opened file object
+    :type f: file object
+    :return: The file object, recoded to UTF-8
+
+    """
     encoding = 'utf-8'
     recoder = lambda f, from_encoding, to_encoding: \
         codecs.StreamRecoder(f, codecs.getencoder(to_encoding),
@@ -106,9 +110,16 @@ def utf8_file(f):
     return f
 
 
-def read(fobj, delimiter="\t", quoting=csv.QUOTE_NONE, **kwargs):
-    """
-    Read WoS CSV file recoding (if necessary) to UTF-8
+def read(fobj, delimiter="\t", **kwargs):
+    """Read WoS CSV file recoding (if necessary) to UTF-8
+
+    :param fobj: WoS CSV file name or handle
+    :type fobj: str or file
+    :param str delimiter: character delimiting different fields
+    :return:
+        iterator over records in *fobj*, where each record is a field code -
+        value dict
+
     """
     # Make sure we have a file and not a file name
     if not hasattr(fobj, 'read'):
@@ -120,7 +131,7 @@ def read(fobj, delimiter="\t", quoting=csv.QUOTE_NONE, **kwargs):
 
     try:
         f = utf8_file(f)
-        reader = DictReader(f, delimiter=delimiter, quoting=quoting, **kwargs)
+        reader = DictReader(f, delimiter=delimiter, **kwargs)
         for record in reader:
             yield record
     finally:
@@ -129,6 +140,11 @@ def read(fobj, delimiter="\t", quoting=csv.QUOTE_NONE, **kwargs):
 
 
 def record_id(record):
+    """Get WoS record ID for record
+
+    :param dict record: WoS record (field code - value dict)
+
+    """
     import re
 
     first_author = re.sub(r'(.*), (.*)', r'\1 \2', record[u"AU"][0])
@@ -138,9 +154,9 @@ def record_id(record):
     page = u"P" + record[u"BP"] if u"BP" in record else None
     doi = u"DOI " + record[u"DI"] if u"DI" in record else None
 
-    itemlist = [item for item in (first_author, year, journal,
-                                  volume, page, doi) if item]
-    return u", ".join(itemlist)
+    items = (item for item in (first_author, year, journal,
+                               volume, page, doi) if item)
+    return u", ".join(items)
 
 
 def parse(record, delimiter="; ", full_labels=False, skip_empty=True):
