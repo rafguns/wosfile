@@ -159,7 +159,18 @@ def record_id(record):
     return u", ".join(items)
 
 
-def parse(record, delimiter="; ", full_labels=False, skip_empty=True):
+def parse(record, subdelimiter="; ", full_labels=False, skip_empty=True):
+    """Parse record into (ID, structured dict) tuple
+
+    :param dict record: a WoS record
+    :param str subdelimiter:
+        string delimiting different parts of a multi-part field, like author(s)
+    :param bool full_labels:
+        whether or not to use full labels in resulting dict
+    :param bool skip_empty: whether or not to skip empty fields
+    :return: a (record ID, record dict) tuple
+
+    """
     parsed_record = {}
 
     for k, v in record.iteritems():
@@ -170,7 +181,7 @@ def parse(record, delimiter="; ", full_labels=False, skip_empty=True):
         if k is None:
             continue
         if is_iterable[k]:
-            v = v.split(delimiter)
+            v = v.split(subdelimiter)
         parsed_record[k] = v
 
     rec_id = record_id(parsed_record)
@@ -182,7 +193,23 @@ def parse(record, delimiter="; ", full_labels=False, skip_empty=True):
     return rec_id, parsed_record
 
 
-def read_parse(fobj, subdelimiter="; ", full_labels=False,
+def read_parse(fobj, delimiter="\t", subdelimiter="; ", full_labels=False,
                skip_empty=True, **kwargs):
-    for record in read(fobj, **kwargs):
+    """Read and parse WoS file *fobj*
+
+    :param fobj: WoS CSV file name or handle
+    :type fobj: str or file
+    :param str delimiter: string delimiting different fields
+    :param str subdelimiter:
+        string delimiting different parts of a multi-part field, like author(s)
+    :param bool full_labels:
+        whether or not to use full labels in resulting dict
+    :param bool skip_empty: whether or not to skip empty fields
+    :return: a (record ID, record dict) tuple
+    :return:
+        iterator over parsed records in *fobj*, wher each parsed record is a
+        (record ID, record dict) tuple
+
+    """
+    for record in read(fobj, delimiter, **kwargs):
         yield parse(record, subdelimiter, full_labels, skip_empty)
