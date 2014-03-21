@@ -5,6 +5,7 @@ from wos.unicodecsv import DictReader
 
 logger = logging.getLogger(__name__)
 
+
 # Based on http://images.webofknowledge.com/WOK46/help/WOS/h_fieldtags.html
 # Format: (Abbreviation, Full label, Iterable?)
 headings = (
@@ -70,6 +71,65 @@ headings = (
 )
 heading_dict = {abbr: full for abbr, full, _ in headings}
 is_iterable = {abbr: iterable for abbr, _, iterable in headings}
+
+
+class Record(object):
+    def __init__(self, wos_data, subdelimiter="; ", full_labels=False,
+                 skip_empty=True):
+        """Create a record based on *wos_data*
+
+        :param dict wos_data: a WoS record
+        :param str subdelimiter:
+            string delimiting different parts of a multi-part field,
+            like author(s)
+        :param bool full_labels:
+            whether or not to use full labels in resulting dict
+        :param bool skip_empty: whether or not to skip empty fields
+
+        """
+        self.data = {}
+        self.parse(wos_data)
+
+    def parse(self, wos_data, subdelimiter="; ", full_labels=False,
+              skip_empty=True):
+        """Parse *wos_data* into more structured format
+
+        :param dict wos_data: a WoS record
+        :param str subdelimiter:
+            string delimiting different parts of a multi-part field,
+            like author(s)
+        :param bool full_labels:
+            whether or not to use full labels in resulting dict
+        :param bool skip_empty: whether or not to skip empty fields
+
+        """
+        self.data.clear()
+        for k, v in wos_data.iteritems():
+            if skip_empty and not v:
+                continue
+            # Since WoS files have a spurious tab at the end of each line, we
+            # may get a 'ghost' None key, which is also ignored.
+            if k is None:
+                continue
+            if is_iterable[k]:
+                v = v.split(subdelimiter)
+            self.data[k] = v
+
+    @property
+    def record_id(self):
+        """Get WoS record ID for current data"""
+        import re
+
+        first_author = re.sub(r'(.*), (.*)', r'\1 \2', self.data[u"AU"][0])
+        year = self.data[u"PY"]
+        journal = self.data.get(u"J9",
+                                self.data.get(u"BS", self.data.get(u"SO")))
+        volume = u"V" + self.data[u"VL"] if u"VL" in self.data else None
+        page = u"P" + self.data[u"BP"] if u"BP" in self.data else None
+        doi = u"DOI " + self.data[u"DI"] if u"DI" in self.data else None
+
+        return u", ".join(item for item in (first_author, year, journal,
+                                            volume, page, doi) if item)
 
 
 def utf8_file(f):
@@ -139,60 +199,6 @@ def read(fobj, delimiter="\t", **kwargs):
             f.close()
 
 
-def record_id(record):
-    """Get WoS record ID for record
-
-    :param dict record: WoS record (field code - value dict)
-
-    """
-    import re
-
-    first_author = re.sub(r'(.*), (.*)', r'\1 \2', record[u"AU"][0])
-    year = record[u"PY"]
-    journal = record.get(u"J9", record.get(u"BS", record.get(u"SO")))
-    volume = u"V" + record[u"VL"] if u"VL" in record else None
-    page = u"P" + record[u"BP"] if u"BP" in record else None
-    doi = u"DOI " + record[u"DI"] if u"DI" in record else None
-
-    items = (item for item in (first_author, year, journal,
-                               volume, page, doi) if item)
-    return u", ".join(items)
-
-
-def parse(record, subdelimiter="; ", full_labels=False, skip_empty=True):
-    """Parse record into (ID, structured dict) tuple
-
-    :param dict record: a WoS record
-    :param str subdelimiter:
-        string delimiting different parts of a multi-part field, like author(s)
-    :param bool full_labels:
-        whether or not to use full labels in resulting dict
-    :param bool skip_empty: whether or not to skip empty fields
-    :return: a (record ID, record dict) tuple
-
-    """
-    parsed_record = {}
-
-    for k, v in record.iteritems():
-        if skip_empty and not v:
-            continue
-        # Since WoS files have a spurious tab at the end of each line, we may
-        # get a 'ghost' None key, which is also ignored.
-        if k is None:
-            continue
-        if is_iterable[k]:
-            v = v.split(subdelimiter)
-        parsed_record[k] = v
-
-    rec_id = record_id(parsed_record)
-
-    if full_labels:
-        parsed_record = {heading_dict[k]:
-                         v for k, v in parsed_record.iteritems()}
-
-    return rec_id, parsed_record
-
-
 def read_parse(fobj, delimiter="\t", subdelimiter="; ", full_labels=False,
                skip_empty=True, **kwargs):
     """Read and parse WoS file *fobj*
@@ -205,11 +211,10 @@ def read_parse(fobj, delimiter="\t", subdelimiter="; ", full_labels=False,
     :param bool full_labels:
         whether or not to use full labels in resulting dict
     :param bool skip_empty: whether or not to skip empty fields
-    :return: a (record ID, record dict) tuple
     :return:
-        iterator over parsed records in *fobj*, wher each parsed record is a
-        (record ID, record dict) tuple
+        iterator over parsed records in *fobj*, where each parsed record is a
+        :py:class:`wos.Record`
 
     """
-    for record in read(fobj, delimiter, **kwargs):
-        yield parse(record, subdelimiter, full_labels, skip_empty)
+    for wos_record in read(fobj, delimiter, **kwargs):
+        yield Record(wos_record, subdelimiter, full_labels, skip_empty)
