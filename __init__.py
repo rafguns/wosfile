@@ -73,7 +73,7 @@ heading_dict = {abbr: full for abbr, full, _ in headings}
 is_iterable = {abbr: iterable for abbr, _, iterable in headings}
 
 
-class Record(object):
+class Record(dict):
     def __init__(self, wos_data, subdelimiter="; ", skip_empty=True):
         """Create a record based on *wos_data*
 
@@ -84,7 +84,6 @@ class Record(object):
         :param bool skip_empty: whether or not to skip empty fields
 
         """
-        self.data = {}
         self.parse(wos_data)
 
     def parse(self, wos_data, subdelimiter="; ", skip_empty=True):
@@ -97,7 +96,7 @@ class Record(object):
         :param bool skip_empty: whether or not to skip empty fields
 
         """
-        self.data.clear()
+        self.clear()
         for k, v in wos_data.iteritems():
             if skip_empty and not v:
                 continue
@@ -107,20 +106,20 @@ class Record(object):
                 continue
             if is_iterable[k]:
                 v = v.split(subdelimiter)
-            self.data[k] = v
+            self[k] = v
 
     @property
     def record_id(self):
         """Get WoS record ID for current data"""
         import re
 
-        first_author = re.sub(r'(.*), (.*)', r'\1 \2', self.data[u"AU"][0])
-        year = self.data[u"PY"]
-        journal = self.data.get(u"J9",
-                                self.data.get(u"BS", self.data.get(u"SO")))
-        volume = u"V" + self.data[u"VL"] if u"VL" in self.data else None
-        page = u"P" + self.data[u"BP"] if u"BP" in self.data else None
-        doi = u"DOI " + self.data[u"DI"] if u"DI" in self.data else None
+        first_author = re.sub(r'(.*), (.*)', r'\1 \2', self[u"AU"][0])
+        year = self[u"PY"]
+        journal = self.get(u"J9",
+                           self.get(u"BS", self.get(u"SO")))
+        volume = u"V" + self[u"VL"] if u"VL" in self else None
+        page = u"P" + self[u"BP"] if u"BP" in self else None
+        doi = u"DOI " + self[u"DI"] if u"DI" in self else None
 
         return u", ".join(item for item in (first_author, year, journal,
                                             volume, page, doi) if item)
