@@ -74,32 +74,26 @@ is_iterable = {abbr: iterable for abbr, _, iterable in headings}
 
 
 class Record(object):
-    def __init__(self, wos_data, subdelimiter="; ", full_labels=False,
-                 skip_empty=True):
+    def __init__(self, wos_data, subdelimiter="; ", skip_empty=True):
         """Create a record based on *wos_data*
 
         :param dict wos_data: a WoS record
         :param str subdelimiter:
             string delimiting different parts of a multi-part field,
             like author(s)
-        :param bool full_labels:
-            whether or not to use full labels in resulting dict
         :param bool skip_empty: whether or not to skip empty fields
 
         """
         self.data = {}
         self.parse(wos_data)
 
-    def parse(self, wos_data, subdelimiter="; ", full_labels=False,
-              skip_empty=True):
+    def parse(self, wos_data, subdelimiter="; ", skip_empty=True):
         """Parse *wos_data* into more structured format
 
         :param dict wos_data: a WoS record
         :param str subdelimiter:
             string delimiting different parts of a multi-part field,
             like author(s)
-        :param bool full_labels:
-            whether or not to use full labels in resulting dict
         :param bool skip_empty: whether or not to skip empty fields
 
         """
@@ -199,8 +193,8 @@ def read(fobj, delimiter="\t", **kwargs):
             f.close()
 
 
-def read_parse(fobj, delimiter="\t", subdelimiter="; ", full_labels=False,
-               skip_empty=True, **kwargs):
+def read_parse(fobj, delimiter="\t", subdelimiter="; ", skip_empty=True,
+               **kwargs):
     """Read and parse WoS file *fobj*
 
     :param fobj: WoS CSV file name or handle
@@ -208,8 +202,6 @@ def read_parse(fobj, delimiter="\t", subdelimiter="; ", full_labels=False,
     :param str delimiter: string delimiting different fields
     :param str subdelimiter:
         string delimiting different parts of a multi-part field, like author(s)
-    :param bool full_labels:
-        whether or not to use full labels in resulting dict
     :param bool skip_empty: whether or not to skip empty fields
     :return:
         iterator over parsed records in *fobj*, where each parsed record is a
@@ -217,4 +209,4 @@ def read_parse(fobj, delimiter="\t", subdelimiter="; ", full_labels=False,
 
     """
     for wos_record in read(fobj, delimiter, **kwargs):
-        yield Record(wos_record, subdelimiter, full_labels, skip_empty)
+        yield Record(wos_record, subdelimiter, skip_empty)
