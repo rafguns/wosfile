@@ -1,7 +1,15 @@
 import codecs
 import logging
 
-from wos.unicodecsv import DictReader
+from .unicodecsv import DictReader
+
+__all__ = [
+    "heading_dict",
+    "Record",
+    "read",
+    "read_parse",
+]
+
 
 logger = logging.getLogger(__name__)
 
