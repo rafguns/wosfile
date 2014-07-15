@@ -19,6 +19,7 @@ class PlainTextReader(object):
         self.encoding = encoding
         self.subdelimiter = subdelimiter
         self.version = "1.0"  # Expected version of WoS plain text format
+        self.current_line = 0
 
         line = self._next_line()
         if not line.startswith(u"FN"):
@@ -32,6 +33,7 @@ class PlainTextReader(object):
 
     def _next_line(self):
         """Get next line as Unicode"""
+        self.current_line += 1
         return self.fh.readline().decode(self.encoding).rstrip(u"\n")
 
     def _next_record_lines(self):
@@ -43,8 +45,9 @@ class PlainTextReader(object):
                 continue
             if line.startswith(u"EF"):
                 if lines:  # We're in the middle of a record!
-                    raise ReaderError(u"Encountered unexpected end of file "
-                                      "marker EF")
+                    raise ReaderError(
+                        u"Encountered unexpected end of file marker EF on "
+                        "line {}".format(self.current_line))
                 else:  # End of file
                     raise StopIteration
             if not line.startswith(u"ER"):
