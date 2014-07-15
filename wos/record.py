@@ -5,6 +5,7 @@ from .unicodecsv import DictReader
 
 __all__ = [
     "heading_dict",
+    "is_iterable",
     "Record",
     "read",
     "read_parse",
@@ -92,28 +93,26 @@ class Record(dict):
         :param bool skip_empty: whether or not to skip empty fields
 
         """
+        self.subdelimiter = subdelimiter
+        self.skip_empty = skip_empty
         self.parse(wos_data)
 
-    def parse(self, wos_data, subdelimiter="; ", skip_empty=True):
+    def parse(self, wos_data):
         """Parse *wos_data* into more structured format
 
         :param dict wos_data: a WoS record
-        :param str subdelimiter:
-            string delimiting different parts of a multi-part field,
-            like author(s)
-        :param bool skip_empty: whether or not to skip empty fields
 
         """
         self.clear()
         for k, v in wos_data.iteritems():
-            if skip_empty and not v:
+            if self.skip_empty and not v:
                 continue
             # Since WoS files have a spurious tab at the end of each line, we
             # may get a 'ghost' None key, which is also ignored.
             if k is None:
                 continue
             if is_iterable[k]:
-                v = v.split(subdelimiter)
+                v = v.split(self.subdelimiter)
             self[k] = v
 
     @property
@@ -171,6 +170,11 @@ def utf8_file(f):
     return f
 
 
+def get_reader(fh):
+    """Get appropriate reader for the file type"""
+    return DictReader
+
+
 def read(fobj, delimiter="\t", **kwargs):
     """Read WoS CSV file recoding (if necessary) to UTF-8
 
@@ -192,7 +196,7 @@ def read(fobj, delimiter="\t", **kwargs):
 
     try:
         f = utf8_file(f)
-        reader = DictReader(f, delimiter=delimiter, **kwargs)
+        reader = get_reader(f)(f, delimiter=delimiter, **kwargs)
         for record in reader:
             yield record
     finally:
