@@ -21,11 +21,11 @@ class PlainTextReader(object):
         self.version = "1.0"  # Expected version of WoS plain text format
         self.current_line = 0
 
-        line = self._next_line()
+        line = self._next_nonempty_line()
         if not line.startswith(u"FN"):
             raise ReaderError(u"Unknown file format")
 
-        line = self._next_line()
+        line = self._next_nonempty_line()
         label, version = line.split()
         if label != u"VR" or version != self.version:
             raise ReaderError(u"Unknown version: expected {} "
@@ -36,13 +36,18 @@ class PlainTextReader(object):
         self.current_line += 1
         return self.fh.readline().decode(self.encoding).rstrip(u"\n")
 
+    def _next_nonempty_line(self):
+        """Get next line that is not empty"""
+        line = u""
+        while not line:
+            line = self._next_line()
+        return line
+
     def _next_record_lines(self):
         """Gather lines that belong to one record"""
         lines = []
         while True:
-            line = self._next_line()
-            if not line:  # Skip blank lines
-                continue
+            line = self._next_nonempty_line()
             if line.startswith(u"EF"):
                 if lines:  # We're in the middle of a record!
                     raise ReaderError(
@@ -50,10 +55,10 @@ class PlainTextReader(object):
                         "line {}".format(self.current_line))
                 else:  # End of file
                     raise StopIteration
-            if not line.startswith(u"ER"):
-                lines.append(line)
-            else:
+            if line.startswith(u"ER"):  # end of record
                 return lines
+            else:
+                lines.append(line)
 
     def next(self):
         record = {}
@@ -63,8 +68,9 @@ class PlainTextReader(object):
 
         # Parse record, this is mostly handling multi-line fields
         for line in lines:
-            if not line.startswith(u"  "):
+            if not line.startswith(u"  "):  # new field
                 if heading:
+                    # Add previous field
                     # XXX This is too naive: some fields, like FU, should be
                     # joined by a space.
                     record[heading] = self.subdelimiter.join(values)
