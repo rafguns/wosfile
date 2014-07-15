@@ -73,6 +73,9 @@ class PlainTextReader(object):
             else:
                 values.append(line.strip())
 
+        # Add last field
+        record[heading] = self.subdelimiter.join(values)
+
         return record
 
     def __iter__(self):
