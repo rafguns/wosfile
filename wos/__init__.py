@@ -1,3 +1,3 @@
 from .record import *
-from .plaintext import *
+from .read import *
 from .tags import *

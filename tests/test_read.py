@@ -1,27 +1,26 @@
 from cStringIO import StringIO
 from nose.tools import raises, assert_dict_equal, assert_equal
 
-import wos
-from wos.plaintext import ReaderError, PlainTextReader
+from wos.read import ReadError, PlainTextReader
 
 preamble = """FN Thomson Reuters Web of Science
 VR 1.0
 """
 
 
-@raises(ReaderError)
+@raises(ReadError)
 def test_wrong_format():
     f = StringIO("XY Bla\nVR 1.0")
     PlainTextReader(f)
 
 
-@raises(ReaderError)
+@raises(ReadError)
 def test_wrong_version():
     f = StringIO("FN Thomson Reuters Web of Science\nVR 1.1")
     PlainTextReader(f)
 
 
-@raises(ReaderError)
+@raises(ReadError)
 def test_forgotten_EF():
     f = StringIO(preamble + "PT abc\nAU xuz\nER\n\nPT abc2\nEF")
     r = PlainTextReader(f)
@@ -80,7 +79,6 @@ def test_multiline_fields_nosplit():
 
 def test_wos1():
     with open("examples/wos1.txt") as fh:
-        fh = wos.utf8_file(fh)
         r = PlainTextReader(fh)
         for record in r:
             pass
