@@ -60,7 +60,7 @@ def get_reader(fh):
     else:
         raise ReadError(u"Could not determine appropriate reader for file "
                         "{}".format(fh))
-    # Go back to start of file
+    # Go back to initial position
     fh.seek(-10, 1)
     return reader
 
@@ -107,6 +107,9 @@ class TabDelimitedReader(object):
         except KeyError:
             pass
         return record
+
+    def __iter__(self):
+        return self
 
 
 class PlainTextReader(object):
