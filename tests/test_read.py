@@ -99,6 +99,13 @@ class TestTabDelimitedReader:
         for result, exp in zip(results, expected):
             assert_dict_equal(result, exp)
 
+    def test_spurious_tab_at_end(self):
+        f = StringIO("PT\tAU\tC1\nJ\ta\tb\t")
+        r = TabDelimitedReader(f)
+
+        expected = {u"PT": u"J", u"AU": u"a", u"C1": u"b"}
+        assert_dict_equal(next(r), expected)
+
     def test_wos_tabdelimited_utf16(self):
         with open("data/wos_tab_delimited_win_utf16.txt") as fh:
             r = TabDelimitedReader(fh)
