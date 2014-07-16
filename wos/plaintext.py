@@ -1,3 +1,6 @@
+from .tags import has_item_per_line
+
+
 class ReaderError(Exception):
     pass
 
@@ -17,8 +20,8 @@ class PlainTextReader(object):
         """
         self.fh = fh
         self.encoding = encoding
-        self.subdelimiter = subdelimiter
-        self.version = "1.0"  # Expected version of WoS plain text format
+        self.subdelimiter = unicode(subdelimiter)
+        self.version = u"1.0"  # Expected version of WoS plain text format
         self.current_line = 0
 
         line = self._next_nonempty_line()
@@ -60,6 +63,12 @@ class PlainTextReader(object):
             else:
                 lines.append(line)
 
+    def _format_values(self, heading, values):
+        if has_item_per_line[heading]:  # Iterable field with one item per line
+            return self.subdelimiter.join(values)
+        else:
+            return u" ".join(values)
+
     def next(self):
         record = {}
         values = []
@@ -69,18 +78,16 @@ class PlainTextReader(object):
         # Parse record, this is mostly handling multi-line fields
         for line in lines:
             if not line.startswith(u"  "):  # new field
+                # Add previous field, if available, to record
                 if heading:
-                    # Add previous field
-                    # XXX This is too naive: some fields, like FU, should be
-                    # joined by a space.
-                    record[heading] = self.subdelimiter.join(values)
+                    record[heading] = self._format_values(heading, values)
                 heading, v = line.split(None, 1)
                 values = [v]
             else:
                 values.append(line.strip())
 
         # Add last field
-        record[heading] = self.subdelimiter.join(values)
+        record[heading] = self._format_values(heading, values)
 
         return record
 

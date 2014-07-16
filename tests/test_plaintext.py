@@ -1,6 +1,7 @@
 from cStringIO import StringIO
 from nose.tools import raises, assert_dict_equal, assert_equal
 
+import wos
 from wos.plaintext import ReaderError, PlainTextReader
 
 preamble = """FN Thomson Reuters Web of Science
@@ -53,16 +54,33 @@ def test_multiple_records():
         assert_dict_equal(result, exp)
 
 
-def test_multiline_fields():
-    f = StringIO(preamble + "PT abc\nSO J.Whatever\nSU Here\n   be\n   dragons"
+def test_multiline_fields_split():
+    f = StringIO(preamble + "PT abc\nSO J.Whatever\nAF Here\n   be\n   dragons"
                  "\nER\nEF")
 
     r = PlainTextReader(f)
     expected = {u"PT": u"abc", u"SO": u"J.Whatever",
-                u"SU": u"Here; be; dragons"}
+                u"AF": u"Here; be; dragons"}
     assert_dict_equal(next(r), expected)
 
     f.seek(0)
     r = PlainTextReader(f, subdelimiter="##")
-    expected[u"SU"] = u"Here##be##dragons"
+    expected[u"AF"] = u"Here##be##dragons"
     assert_dict_equal(next(r), expected)
+
+
+def test_multiline_fields_nosplit():
+    f = StringIO(preamble + "PT abc\nSC Here; there\n  be dragons; Yes"
+                 "\nER\nEF")
+
+    r = PlainTextReader(f)
+    expected = {u"PT": u"abc", u"SC": u"Here; there be dragons; Yes"}
+    assert_dict_equal(next(r), expected)
+
+
+def test_wos1():
+    with open("examples/wos1.txt") as fh:
+        fh = wos.utf8_file(fh)
+        r = PlainTextReader(fh)
+        for record in r:
+            pass

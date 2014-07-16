@@ -1,85 +1,18 @@
 import codecs
 import logging
 
+from .tags import is_iterable
 from .unicodecsv import DictReader
 
 __all__ = [
-    "heading_dict",
-    "is_iterable",
     "Record",
     "read",
     "read_parse",
+    "utf8_file",
 ]
 
 
 logger = logging.getLogger(__name__)
-
-
-# Based on http://images.webofknowledge.com/WOK46/help/WOS/h_fieldtags.html
-# Format: (Abbreviation, Full label, Iterable?)
-headings = (
-    (u"AB", u"Abstract", False),
-    (u"AF", u"Author Full Name", True),
-    (u"AR", u"Article Number", False),
-    (u"AU", u"Authors", True),
-    (u"BA", u"BA", False),  # Unknown
-    (u"BE", u"Book Editors", True),
-    (u"BN", u"ISBN", False),
-    (u"BP", u"Beginning Page", False),
-    (u"BS", u"Book Series Subtitle", False),
-    (u"C1", u"Author Address", True),
-    (u"CA", u"Group Authors", False),
-    (u"CL", u"Conference Location", False),
-    (u"CR", u"Cited References", True),
-    (u"CT", u"Conference Title", False),
-    (u"CY", u"Conference Date", False),
-    (u"DE", u"Author Keywords", True),
-    (u"DI", u"Digital Object Identifier (DOI)", False),
-    (u"DT", u"Document Type", False),
-    (u"D2", u"D2", False),  # Unknown
-    (u"ED", u"Editors", False),
-    (u"EF", u"End of File", False),
-    (u"EM", u"E-mail Address", True),
-    (u"EP", u"Ending Page", False),
-    (u"ER", u"End of Record", False),
-    (u"FU", u"Funding Agency and Grant Number", False),
-    (u"FX", u"Funding Text", False),
-    (u"GA", u"Document Delivery Number", False),
-    (u"GP", u"GP", False),  # unknown
-    (u"HO", u"Conference Host", False),
-    (u"ID", u"Keywords Plus", True),
-    (u"IS", u"Issue", False),
-    (u"J9", u"29-Character Source Abbreviation", False),
-    (u"JI", u"ISO Source Abbreviation", False),
-    (u"LA", u"Language", False),
-    (u"NR", u"Cited Reference Count", False),
-    (u"PA", u"Publisher Address", False),
-    (u"PD", u"Publication Date", False),
-    (u"PG", u"Page Count", False),
-    (u"PI", u"Publisher City", False),
-    (u"PN", u"Part Number", False),
-    (u"PT", u"Publication type", False),
-    (u"PU", u"Publisher", False),
-    (u"PY", u"Year Published", False),
-    (u"P2", u"P2", False),  # Unknown
-    (u"RI", u"RI", False),  # Unknown
-    (u"RP", u"Re Address", False),
-    (u"SC", u"Subject Category", True),
-    (u"SE", u"Book Series Title", False),
-    (u"SI", u"Special Issue", False),
-    (u"SN", u"ISSN", False),
-    (u"SO", u"Publication Name", False),
-    (u"SP", u"Conference Sponsors", False),
-    (u"SU", u"Supplement", False),
-    (u"TC", u"Times Cited", False),
-    (u"TI", u"Document Title", False),
-    (u"UT", u"Unique Article Identifier", False),
-    (u"VL", u"Volume", False),
-    (u"WC", u"Web of Science Category", True),
-    (u"Z9", u"Z9", False)  # unknown
-)
-heading_dict = {abbr: full for abbr, full, _ in headings}
-is_iterable = {abbr: iterable for abbr, _, iterable in headings}
 
 
 class Record(dict):
