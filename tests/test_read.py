@@ -70,8 +70,8 @@ class TestPlainTextReader:
         expected = {u"PT": u"abc", u"SC": u"Here; there be dragons; Yes"}
         assert_dict_equal(next(r), expected)
 
-    def test_wos1(self):
-        with open("examples/wos1.txt") as fh:
+    def test_wos_plaintext(self):
+        with open("data/wos_plaintext.txt") as fh:
             r = PlainTextReader(fh)
             for record in r:
                 pass
@@ -99,12 +99,23 @@ class TestTabDelimitedReader:
         for result, exp in zip(results, expected):
             assert_dict_equal(result, exp)
 
+    def test_wos_tabdelimited_utf16(self):
+        with open("data/wos_tab_delimited_win_utf16.txt") as fh:
+            r = TabDelimitedReader(fh)
+            for record in r:
+                pass
+
+    def test_wos_tabdelimited_utf8(self):
+        with open("data/wos_tab_delimited_win_utf8.txt") as fh:
+            r = TabDelimitedReader(fh)
+            for record in r:
+                pass
 
 # This fails because of small differences between content of fields in the two
 # formats...
 #def test_plaintext_tabdelimited_equivalent():
-#    with open("examples/wos1.txt") as plaintext,\
-#            open("examples/wos_tab_delimited_win.txt") as tabdelimited:
+#    with open("data/wos_plaintext.txt") as plaintext,\
+#            open("data/wos_tab_delimited_win_utf8.txt") as tabdelimited:
 #        pt_reader = PlainTextReader(plaintext)
 #        td_reader = TabDelimitedReader(tabdelimited)
 #        for pt in pt_reader:

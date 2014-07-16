@@ -12,7 +12,7 @@ class ReadError(Exception):
 
 
 def utf8_file(fh):
-    """Make sure that f is a UTF-8 encoded file
+    """Make sure that fh is a UTF-8 encoded file
 
     :param fh: Opened file object
     :type fh: file object
