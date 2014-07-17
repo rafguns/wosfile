@@ -6,6 +6,15 @@ from .unicodecsv import DictReader
 
 logger = logging.getLogger(__name__)
 
+__all__ = [
+    "get_reader",
+    "read",
+    "utf8_file",
+    "PlainTextReader",
+    "ReadError",
+    "TabDelimitedReader",
+]
+
 
 class ReadError(Exception):
     pass
@@ -51,7 +60,7 @@ def utf8_file(fh):
 
 def get_reader(fh):
     """Get appropriate reader for the file type of *fh*"""
-    sniff = fh.seek(10)
+    sniff = fh.read(10)
 
     if sniff.startswith(u"FN "):
         reader = PlainTextReader
@@ -65,11 +74,14 @@ def get_reader(fh):
     return reader
 
 
-def read(fobj, reader=None, **kwargs):
+def read(fobj, using=None, **kwargs):
     """Read WoS CSV file recoding (if necessary) to UTF-8
 
     :param fobj: WoS CSV file name or handle
     :type fobj: str or file
+    :param using:
+        class used for reading *fobj*. If None, we try to automatically
+        find best reader
     :return:
         iterator over records in *fobj*, where each record is a field code -
         value dict
@@ -85,7 +97,8 @@ def read(fobj, reader=None, **kwargs):
 
     try:
         fh = utf8_file(fh)
-        reader = get_reader(fh)(fh, **kwargs)
+        reader_class = using or get_reader(fh)
+        reader = reader_class(fh, **kwargs)
         for record in reader:
             yield record
     finally:

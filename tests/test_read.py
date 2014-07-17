@@ -1,11 +1,55 @@
+import os
 from cStringIO import StringIO
-from nose.tools import raises, assert_dict_equal, assert_equal
+from nose.tools import assert_dict_equal, assert_equal, assert_raises, raises
 
-from wos.read import (ReadError, PlainTextReader, TabDelimitedReader)
+from wos.read import (ReadError, PlainTextReader, TabDelimitedReader,
+                      get_reader, read)
+
 
 preamble = """FN Thomson Reuters Web of Science
 VR 1.0
 """
+
+
+def test_get_reader():
+    data = "FN Thomson Reuters Web of Science\nVR 1.0"
+    f = StringIO(data)
+    assert_equal(get_reader(f), PlainTextReader)
+    assert_equal(f.read(), data)
+
+    data = "PT\tAF\tAU\tCU\tC1"
+    f = StringIO(data)
+    assert_equal(get_reader(f), TabDelimitedReader)
+    assert_equal(f.read(), data)
+
+    with assert_raises(ReadError):
+        get_reader(StringIO("XY Bla\nVR 1.0"))
+
+
+def test_read():
+    data = preamble + "PT J\nAU John Doe\nER\nEF"
+    expected = {u"PT": u"J", u"AU": u"John Doe"}
+
+    f = StringIO(data)
+    res = list(read(f, using=PlainTextReader))
+    assert_equal(len(res), 1)
+    assert_equal(res[0], expected)
+
+    f.seek(0)
+    res = list(read(f))
+    assert_equal(len(res), 1)
+    assert_equal(res[0], expected)
+
+    import tempfile
+    fd, fname = tempfile.mkstemp()
+    with open(fname, 'w') as f:
+        f.write(data)
+    res = list(read(fname))
+    assert_equal(len(res), 1)
+    assert_equal(res[0], expected)
+    assert f.closed
+    os.close(fd)
+    os.unlink(fname)
 
 
 class TestPlainTextReader:
