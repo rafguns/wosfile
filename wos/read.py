@@ -142,7 +142,7 @@ class PlainTextReader(object):
     def _next_line(self):
         """Get next line as Unicode"""
         self.current_line += 1
-        return self.fh.readline().decode("utf-8").rstrip(u"\n")
+        return next(self.fh).decode("utf-8").rstrip(u"\n")
 
     def _next_nonempty_line(self):
         """Get next line that is not empty"""
@@ -155,7 +155,10 @@ class PlainTextReader(object):
         """Gather lines that belong to one record"""
         lines = []
         while True:
-            line = self._next_nonempty_line()
+            try:
+                line = self._next_nonempty_line()
+            except StopIteration:
+                raise ReadError(u"Encountered EOF before 'EF' marker")
             if line.startswith(u"EF"):
                 if lines:  # We're in the middle of a record!
                     raise ReadError(

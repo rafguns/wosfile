@@ -20,11 +20,16 @@ class TestPlainTextReader:
         PlainTextReader(f)
 
     @raises(ReadError)
-    def test_forgotten_EF(self):
+    def test_forgotten_ER(self):
         f = StringIO(preamble + "PT abc\nAU xuz\nER\n\nPT abc2\nEF")
         r = PlainTextReader(f)
-        for rec in r:
-            pass
+        list(r)
+
+    @raises(ReadError)
+    def test_forgotten_EF(self):
+        f = StringIO(preamble + "PT abc\nAU xuz\nER\n\nPT abc2\nER")
+        r = PlainTextReader(f)
+        list(r)
 
     def test_ignore_empty_lines(self):
         f = StringIO("\nFN Thomson Reuters\n\nVR 1.0\nPT abc\n\nAU xyz\nER"
@@ -39,7 +44,7 @@ class TestPlainTextReader:
                      "AB abstract\nER\nEF")
         r = PlainTextReader(f)
 
-        results = [result for result in r]
+        results = list(r)
         expected = [{u"PT": u"abc", u"AU": u"xyz"},
                     {u"PT": u"abc2", u"AU": u"xyz2", u"AB": u"abstract"}]
 
