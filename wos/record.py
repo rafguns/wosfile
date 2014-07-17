@@ -1,15 +1,10 @@
-import logging
-
 from .read import read
 from .tags import is_iterable
 
 __all__ = [
     "Record",
-    "read_parse",
+    "records_from",
 ]
-
-
-logger = logging.getLogger(__name__)
 
 
 class Record(dict):
@@ -58,13 +53,11 @@ class Record(dict):
                                             volume, page, doi) if item)
 
 
-def read_parse(fobj, delimiter="\t", subdelimiter="; ", skip_empty=True,
-               **kwargs):
-    """Read and parse WoS file *fobj*
+def records_from(fobj, subdelimiter="; ", skip_empty=True, **kwargs):
+    """Get records from WoS file *fobj*
 
-    :param fobj: WoS CSV file name or handle
+    :param fobj: WoS file name or file handle
     :type fobj: str or file
-    :param str delimiter: string delimiting different fields
     :param str subdelimiter:
         string delimiting different parts of a multi-part field, like author(s)
     :param bool skip_empty: whether or not to skip empty fields
@@ -73,5 +66,5 @@ def read_parse(fobj, delimiter="\t", subdelimiter="; ", skip_empty=True,
         :py:class:`wos.Record`
 
     """
-    for wos_record in read(fobj, delimiter, **kwargs):
+    for wos_record in read(fobj, **kwargs):
         yield Record(wos_record, subdelimiter, skip_empty)
