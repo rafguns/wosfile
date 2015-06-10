@@ -1,6 +1,12 @@
+from __future__ import unicode_literals
+
 import codecs
 import logging
-from unicodecsv import DictReader
+import sys
+from csv import DictReader
+
+if sys.version_info[0] == 2:
+    from io import open
 
 from .tags import has_item_per_line
 
@@ -9,7 +15,6 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "get_reader",
     "read",
-    "utf8_file",
     "PlainTextReader",
     "ReadError",
     "TabDelimitedReader",
@@ -20,96 +25,85 @@ class ReadError(Exception):
     pass
 
 
-def utf8_file(fh):
-    """Make sure that fh is a UTF-8 encoded file
+def sniff_encoding(fh):
+    """Guess encoding of file `fh`
 
-    :param fh: Opened file object
+    Note that this function is optimized for WoS text files and may yield
+    incorrect results for other text files.
+
+    :param fh: File opened in binary mode
     :type fh: file object
-    :return: The file object, recoded to UTF-8
+    :return: best guess encoding as str
 
     """
-    encoding = 'utf-8'
-    recoder = lambda fh, from_encoding, to_encoding: \
-        codecs.StreamRecoder(fh, codecs.getencoder(to_encoding),
-                             codecs.getdecoder(to_encoding),
-                             codecs.getreader(from_encoding),
-                             codecs.getwriter(to_encoding))
-
-    sniff = fh.read(10)
-
-    if sniff.startswith(codecs.BOM_UTF16_LE):
-        logger.debug("File '%s' encoded as UTF-16-LE" % fh)
-        fh.seek(len(codecs.BOM_UTF16_LE))
-        return recoder(fh, 'utf-16-le', encoding)
-
-    if sniff.startswith(codecs.BOM_UTF16_BE):
-        logger.debug("File '%s' encoded as UTF-16-BE" % fh)
-        fh.seek(len(codecs.BOM_UTF16_BE))
-        return recoder(fh, 'utf-16-be', encoding)
-
-    if sniff.startswith(codecs.BOM_UTF8):
-        logger.debug("File '%s' encoded as UTF-8 with BOM" % fh)
-        fh.seek(len(codecs.BOM_UTF8))
-        return fh
-
-    # WoS exports are always(?) UTF-8 or UTF-16
-    logger.debug("File '%s' encoded as UTF-8 without BOM" % fh)
+    sniff = fh.read(5)
     fh.seek(0)
-    return fh
+
+    encodings = {codecs.BOM_UTF16_LE: 'utf-16-le',
+                 codecs.BOM_UTF16_BE: 'utf-16-be',
+                 codecs.BOM_UTF8: 'utf-8-sig'}
+    for k, v in encodings.items():
+        if sniff.startswith(k):
+            return v
+    # WoS export files are always(?) either UTF-8 or UTF-16
+    return 'utf-8'
 
 
 def get_reader(fh):
-    """Get appropriate reader for the file type of *fh*"""
+    """Get appropriate reader for the file type of `fh`"""
     sniff = fh.read(10)
 
-    if sniff.startswith(u"FN "):
+    if sniff.startswith("FN "):
         reader = PlainTextReader
-    elif u"\t" in sniff:
+    elif "\t" in sniff:
         reader = TabDelimitedReader
     else:
-        raise ReadError(u"Could not determine appropriate reader for file "
+        raise ReadError("Could not determine appropriate reader for file "
                         "{}".format(fh))
     # Go back to initial position
-    fh.seek(-10, 1)
+    fh.seek(0)
     return reader
 
 
-def read(fobj, using=None, **kwargs):
-    """Read WoS CSV file recoding (if necessary) to UTF-8
+def read(fname, using=None, encoding=None, **kwargs):
+    """Read WoS export file ('tab-delimited' or 'plain text')
 
-    :param fobj: WoS CSV file name or handle
-    :type fobj: str or file
+    :param str fname: name of the WoS export file
     :param using:
-        class used for reading *fobj*. If None, we try to automatically
+        class used for reading `fname`. If None, we try to automatically
         find best reader
+    :param str encoding:
+        encoding of the file. If None, we try to automatically determine the
+        file's encoding
     :return:
-        iterator over records in *fobj*, where each record is a field code -
+        iterator over records in `fname`, where each record is a field code -
         value dict
 
     """
-    # Make sure we have a file and not a file name
-    if not hasattr(fobj, 'read'):
-        fh = open(fobj)
-        close_fh = True
-    else:
-        fh = fobj
-        close_fh = False
+    if encoding is None:
+        with open(fname, 'rb') as fh:
+            encoding = sniff_encoding(fh)
 
-    try:
-        fh = utf8_file(fh)
+    with open(fname, 'rt', encoding=encoding) as fh:
         reader_class = using or get_reader(fh)
         reader = reader_class(fh, **kwargs)
         for record in reader:
             yield record
-    finally:
-        if close_fh:
-            fh.close()
 
 
 class TabDelimitedReader(object):
 
     def __init__(self, fh, **kwargs):
-        self.reader = DictReader(utf8_file(fh), delimiter="\t", **kwargs)
+        """Create a reader for tab-delimited file `fh` exported fom WoS
+
+        If you do not know the encoding of a file, the :func:`.read` function
+        tries to automatically Do The Right Thing.
+
+        :param fh: WoS tab-delimited file, opened in text mode(!)
+        :type fh: file object
+
+        """
+        self.reader = DictReader(fh, delimiter="\t", **kwargs)
 
     def next(self):
         record = next(self.reader)
@@ -120,6 +114,7 @@ class TabDelimitedReader(object):
         except KeyError:
             pass
         return record
+    __next__ = next
 
     def __iter__(self):
         return self
@@ -128,38 +123,41 @@ class TabDelimitedReader(object):
 class PlainTextReader(object):
 
     def __init__(self, fh, subdelimiter="; "):
-        """Create a reader for WoS plain text file *fh*
+        """Create a reader for WoS plain text file `fh`
 
-        :param fh: WoS plain text file
+        If you do not know the encoding of a file, the :func:`.read` function
+        tries to automatically Do The Right Thing.
+
+        :param fh: WoS plain text file, opened in text mode(!)
         :type fh: file object
         :param str subdelimiter:
             string delimiting different parts of a multi-part field,
             like author(s)
 
         """
-        self.fh = utf8_file(fh)
-        self.subdelimiter = unicode(subdelimiter)
-        self.version = u"1.0"  # Expected version of WoS plain text format
+        self.fh = fh
+        self.subdelimiter = subdelimiter
+        self.version = "1.0"  # Expected version of WoS plain text format
         self.current_line = 0
 
         line = self._next_nonempty_line()
-        if not line.startswith(u"FN"):
-            raise ReadError(u"Unknown file format")
+        if not line.startswith("FN"):
+            raise ReadError("Unknown file format")
 
         line = self._next_nonempty_line()
         label, version = line.split()
-        if label != u"VR" or version != self.version:
-            raise ReadError(u"Unknown version: expected {} "
+        if label != "VR" or version != self.version:
+            raise ReadError("Unknown version: expected {} "
                             "but got {}".format(self.version, version))
 
     def _next_line(self):
         """Get next line as Unicode"""
         self.current_line += 1
-        return next(self.fh).decode("utf-8").rstrip(u"\n")
+        return next(self.fh).rstrip("\n")
 
     def _next_nonempty_line(self):
         """Get next line that is not empty"""
-        line = u""
+        line = ""
         while not line:
             line = self._next_line()
         return line
@@ -171,15 +169,15 @@ class PlainTextReader(object):
             try:
                 line = self._next_nonempty_line()
             except StopIteration:
-                raise ReadError(u"Encountered EOF before 'EF' marker")
-            if line.startswith(u"EF"):
+                raise ReadError("Encountered EOF before 'EF' marker")
+            if line.startswith("EF"):
                 if lines:  # We're in the middle of a record!
                     raise ReadError(
-                        u"Encountered unexpected end of file marker EF on "
+                        "Encountered unexpected end of file marker EF on "
                         "line {}".format(self.current_line))
                 else:  # End of file
                     raise StopIteration
-            if line.startswith(u"ER"):  # end of record
+            if line.startswith("ER"):  # end of record
                 return lines
             else:
                 lines.append(line)
@@ -188,17 +186,17 @@ class PlainTextReader(object):
         if has_item_per_line[heading]:  # Iterable field with one item per line
             return self.subdelimiter.join(values)
         else:
-            return u" ".join(values)
+            return " ".join(values)
 
     def next(self):
         record = {}
         values = []
-        heading = u""
+        heading = ""
         lines = self._next_record_lines()
 
         # Parse record, this is mostly handling multi-line fields
         for line in lines:
-            if not line.startswith(u"  "):  # new field
+            if not line.startswith("  "):  # new field
                 # Add previous field, if available, to record
                 if heading:
                     record[heading] = self._format_values(heading, values)
@@ -211,6 +209,7 @@ class PlainTextReader(object):
         record[heading] = self._format_values(heading, values)
 
         return record
+    __next__ = next
 
     def __iter__(self):
         return self
