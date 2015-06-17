@@ -1,8 +1,8 @@
 import codecs
 import logging
+from unicodecsv import DictReader
 
 from .tags import has_item_per_line
-from .unicodecsv import DictReader
 
 logger = logging.getLogger(__name__)
 
