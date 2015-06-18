@@ -3,10 +3,10 @@ from __future__ import unicode_literals
 import codecs
 import logging
 import sys
-# Do we also need unicodecsv for Python 2.7?
-from csv import DictReader
+from unicodecsv import DictReader
 
-if sys.version_info[0] == 2:
+PY2 = sys.version_info[0] == 2
+if PY2:
     from io import open
 
 from .tags import has_item_per_line
@@ -104,7 +104,16 @@ class TabDelimitedReader(object):
         :type fh: file object
 
         """
-        self.reader = DictReader(fh, delimiter="\t", **kwargs)
+        # unicodecsv expects byte strings but TabDelimitedReader works with
+        # Unicode strings. Hence, we encode everything.
+        if PY2:
+            def as_utf8(f):
+                return (line.encode('utf-8') for line in f)
+            kwargs.update({'encoding': 'utf-8'})
+            fh = as_utf8(fh)
+        # Delimiter should be byte string in Py2 -- wrapping it with str(), we
+        # get bytes in Py2 and Unicode string in Py3.
+        self.reader = DictReader(fh, delimiter=str("\t"), **kwargs)
 
     def next(self):
         record = next(self.reader)

@@ -163,7 +163,7 @@ class TestTabDelimitedReader:
 
     def test_wos_tabdelimited_utf8(self):
         with open("data/wos_tab_delimited_win_utf8.txt", "rt",
-                  encoding="utf-8") as fh:
+                  encoding="utf-8-sig") as fh:
             r = TabDelimitedReader(fh)
             for record in r:
                 pass
