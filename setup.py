@@ -13,7 +13,7 @@ setup(
     author_email='raf.guns@uantwerpen.be',
     description='Handle Thomson Reuters Web of Science™ export files',
     long_description=long_description,
-    packages=['gefura'],
+    packages=['wos'],
     platforms='any',
     classifiers=[
         'Intended Audience :: Science/Research',
