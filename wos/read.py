@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import codecs
 import logging
 import sys
+# Do we also need unicodecsv for Python 2.7?
 from csv import DictReader
 
 if sys.version_info[0] == 2:
