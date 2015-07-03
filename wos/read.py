@@ -26,6 +26,13 @@ class ReadError(Exception):
     pass
 
 
+def sniff_file(fh, length=10, offset=0):
+    sniff = fh.read(length)
+    fh.seek(offset)
+
+    return sniff
+
+
 def sniff_encoding(fh):
     """Guess encoding of file `fh`
 
@@ -37,22 +44,21 @@ def sniff_encoding(fh):
     :return: best guess encoding as str
 
     """
-    sniff = fh.read(5)
-    fh.seek(0)
+    sniff = sniff_file(fh)
 
     encodings = {codecs.BOM_UTF16_LE: 'utf-16-le',
                  codecs.BOM_UTF16_BE: 'utf-16-be',
                  codecs.BOM_UTF8: 'utf-8-sig'}
-    for k, v in encodings.items():
-        if sniff.startswith(k):
-            return v
-    # WoS export files are always(?) either UTF-8 or UTF-16
+    for bom, encoding in encodings.items():
+        if sniff.startswith(bom):
+            return encoding
+    # WoS export files are either UTF-8 or UTF-16
     return 'utf-8'
 
 
 def get_reader(fh):
     """Get appropriate reader for the file type of `fh`"""
-    sniff = fh.read(10)
+    sniff = sniff_file(fh)
 
     if sniff.startswith("FN "):
         reader = PlainTextReader
@@ -61,8 +67,6 @@ def get_reader(fh):
     else:
         raise ReadError("Could not determine appropriate reader for file "
                         "{}".format(fh))
-    # Go back to initial position
-    fh.seek(0)
     return reader
 
 
@@ -135,7 +139,7 @@ class PlainTextReader(object):
     def __init__(self, fh, subdelimiter="; "):
         """Create a reader for WoS plain text file `fh`
 
-        If you do not know the encoding of a file, the :func:`.read` function
+        If you do not know the format of a file, the :func:`.read` function
         tries to automatically Do The Right Thing.
 
         :param fh: WoS plain text file, opened in text mode(!)
