@@ -18,6 +18,11 @@ VR 1.0
 preamble_s = preamble_b.decode("utf-8")
 
 
+def assert_no_bom(record):
+    # very basic way of asserting that we've successfully stripped the BOM
+    assert u'PT' in record
+
+
 def test_get_reader():
     f = StringIO(preamble_s)
     assert_equal(get_reader(f), PlainTextReader)
@@ -49,7 +54,7 @@ def test_read_actual_data():
     for fname in ('wos_plaintext.txt', 'wos_tab_delimited_win_utf8.txt',
                   'wos_tab_delimited_win_utf16.txt'):
         for rec in read('data/' + fname):
-            pass
+            assert_no_bom(rec)
 
 
 class TestPlainTextReader:
@@ -156,17 +161,17 @@ class TestTabDelimitedReader:
 
     def test_wos_tabdelimited_utf16(self):
         with open("data/wos_tab_delimited_win_utf16.txt", "rt",
-                  encoding="utf-16-le") as fh:
+                  encoding="utf-16") as fh:
             r = TabDelimitedReader(fh)
             for record in r:
-                pass
+                assert_no_bom(record)
 
     def test_wos_tabdelimited_utf8(self):
         with open("data/wos_tab_delimited_win_utf8.txt", "rt",
                   encoding="utf-8-sig") as fh:
             r = TabDelimitedReader(fh)
             for record in r:
-                pass
+                assert_no_bom(record)
 
 # This fails because of small differences between content of fields in the two
 # formats...
