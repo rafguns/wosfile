@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from .read import read
 from .tags import is_iterable
 
@@ -41,16 +43,16 @@ class Record(dict):
         """Get WoS record ID for current data"""
         import re
 
-        first_author = re.sub(r'(.*), (.*)', r'\1 \2', self[u"AU"][0])
-        year = self[u"PY"]
-        journal = self.get(u"J9",
-                           self.get(u"BS", self.get(u"SO")))
-        volume = u"V" + self[u"VL"] if u"VL" in self else None
-        page = u"P" + self[u"BP"] if u"BP" in self else None
-        doi = u"DOI " + self[u"DI"] if u"DI" in self else None
+        first_author = re.sub(r'(.*), (.*)', r'\1 \2', self["AU"][0])
+        year = self["PY"]
+        journal = self.get("J9",
+                           self.get("BS", self.get("SO")))
+        volume = "V" + self["VL"] if "VL" in self else None
+        page = "P" + self["BP"] if "BP" in self else None
+        doi = "DOI " + self["DI"] if "DI" in self else None
 
-        return u", ".join(item for item in (first_author, year, journal,
-                                            volume, page, doi) if item)
+        return ", ".join(item for item in (first_author, year, journal,
+                                           volume, page, doi) if item)
 
 
 def records_from(fobj, subdelimiter="; ", skip_empty=True, **kwargs):
