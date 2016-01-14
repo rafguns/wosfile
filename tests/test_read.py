@@ -42,10 +42,10 @@ def test_read():
     fd, fname = tempfile.mkstemp()
     with open(fname, 'wb') as f:
         f.write(data)
-    res = list(read(fname))
-    assert_equal(len(res), 1)
-    assert_equal(res[0], expected)
-    assert f.closed
+    for res in (list(read(fname)), list(read(fname, using=PlainTextReader))):
+        assert_equal(len(res), 1)
+        assert_equal(res[0], expected)
+        assert f.closed
     os.close(fd)
     os.unlink(fname)
 

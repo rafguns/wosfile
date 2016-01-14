@@ -96,6 +96,8 @@ def read(fname, using=None, encoding=None, **kwargs):
     if using is None:
         with open(fname, 'rt', encoding=encoding) as fh:
             reader_class = get_reader(fh)
+    else:
+        reader_class = using
 
     with open(fname, 'rt', encoding=encoding) as fh:
         reader = reader_class(fh, **kwargs)
