@@ -10,7 +10,7 @@ __all__ = [
 
 
 class Record(dict):
-    def __init__(self, wos_data, subdelimiter="; ", skip_empty=True):
+    def __init__(self, wos_data=None, subdelimiter="; ", skip_empty=True):
         """Create a record based on *wos_data*
 
         :param dict wos_data: a WoS record
@@ -22,7 +22,8 @@ class Record(dict):
         """
         self.subdelimiter = subdelimiter
         self.skip_empty = skip_empty
-        self.parse(wos_data)
+        if wos_data:
+            self.parse(wos_data)
 
     def parse(self, wos_data):
         """Parse *wos_data* into more structured format
@@ -31,11 +32,11 @@ class Record(dict):
 
         """
         self.clear()
-        for k, v in wos_data.iteritems():
+        for k, v in wos_data.items():
             if self.skip_empty and not v:
                 continue
             if is_iterable[k]:
-                v = v.split(self.subdelimiter)
+                v = [part.strip() for part in v.split(self.subdelimiter)]
             self[k] = v
 
     @property
