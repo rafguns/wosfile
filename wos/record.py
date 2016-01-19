@@ -1,5 +1,8 @@
 from __future__ import unicode_literals
 
+import re
+from collections import defaultdict
+
 from .read import read
 from .tags import is_iterable
 
@@ -7,6 +10,10 @@ __all__ = [
     "Record",
     "records_from",
 ]
+
+
+def split_by(string, delimiter):
+    return [part.strip() for part in string.split(delimiter)]
 
 
 class Record(dict):
@@ -36,7 +43,7 @@ class Record(dict):
             if self.skip_empty and not v:
                 continue
             if is_iterable[k]:
-                v = [part.strip() for part in v.split(self.subdelimiter)]
+                v = split_by(v, self.subdelimiter)
             self[k] = v
 
     @property
@@ -54,6 +61,29 @@ class Record(dict):
 
         return ", ".join(item for item in (first_author, year, journal,
                                            volume, page, doi) if item)
+
+
+def parse_address_field(field, subdelimiter='; '):
+    # Only addresses, no authors
+    if not field.startswith('['):
+        addresses = field.split('; ')
+        return addresses
+
+    # Addresses with authors
+    address_field_re = re.compile(r"""\s*\[(.*?)\] # Author part
+                                  \s+(.*)          # Address part
+                                  """, re.VERBOSE)
+    parsed = defaultdict(list)
+
+    address_fields = re.split(';(?=\s*\[)', field)
+    for address_field in address_fields:
+        authors, address = address_field_re.match(address_field).groups()
+        authors = split_by(authors, subdelimiter)
+
+        for author in authors:
+            parsed[author].append(address)
+
+    return parsed
 
 
 def records_from(fobj, subdelimiter="; ", skip_empty=True, **kwargs):
