@@ -4,7 +4,7 @@ import re
 from collections import defaultdict
 
 from .read import read
-from .tags import is_iterable
+from .tags import is_address_field, is_iterable
 
 __all__ = [
     "Record",
@@ -42,7 +42,9 @@ class Record(dict):
         for k, v in wos_data.items():
             if self.skip_empty and not v:
                 continue
-            if is_iterable[k]:
+            if is_address_field[k]:
+                v = parse_address_field(v, self.subdelimiter)
+            elif is_iterable[k]:
                 v = split_by(v, self.subdelimiter)
             self[k] = v
 
@@ -64,6 +66,7 @@ class Record(dict):
 
 
 def parse_address_field(field, subdelimiter='; '):
+    """Parse author address field into author -> addresses dict"""
     # Only addresses, no authors
     if not field.startswith('['):
         addresses = field.split('; ')

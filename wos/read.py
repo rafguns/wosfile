@@ -69,6 +69,7 @@ def get_reader(fh):
     elif "\t" in sniff:
         reader = TabDelimitedReader
     else:
+        # XXX TODO Raised for empty file -- not very elegant
         raise ReadError("Could not determine appropriate reader for file "
                         "{}".format(fh))
     return reader
