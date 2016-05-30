@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 import codecs
-import itertools
 import logging
 import sys
 from unicodecsv import DictReader
@@ -9,6 +8,8 @@ from unicodecsv import DictReader
 PY2 = sys.version_info[0] == 2
 if PY2:
     from io import open
+else:
+    basestring = str
 
 from .tags import has_item_per_line
 
@@ -92,24 +93,27 @@ def read(fname, using=None, encoding=None, **kwargs):
         value dict
 
     """
-    if not isinstance(fname, str):
+    if not isinstance(fname, basestring):
         # fname is an iterable of file names
-        return itertools.chain.from_iterable(read(fn) for fn in fname)
+        for actual_fname in fname:
+            for record in read(actual_fname):
+                yield record
 
-    if encoding is None:
-        with open(fname, 'rb') as fh:
-            encoding = sniff_encoding(fh)
-
-    if using is None:
-        with open(fname, 'rt', encoding=encoding) as fh:
-            reader_class = get_reader(fh)
     else:
-        reader_class = using
+        if encoding is None:
+            with open(fname, 'rb') as fh:
+                encoding = sniff_encoding(fh)
 
-    with open(fname, 'rt', encoding=encoding) as fh:
-        reader = reader_class(fh, **kwargs)
-        for record in reader:
-            yield record
+        if using is None:
+            with open(fname, 'rt', encoding=encoding) as fh:
+                reader_class = get_reader(fh)
+        else:
+            reader_class = using
+
+        with open(fname, 'rt', encoding=encoding) as fh:
+            reader = reader_class(fh, **kwargs)
+            for record in reader:
+                yield record
 
 
 class TabDelimitedReader(object):
