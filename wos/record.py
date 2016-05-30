@@ -93,7 +93,7 @@ def records_from(fobj, subdelimiter="; ", skip_empty=True, **kwargs):
     """Get records from WoS file *fobj*
 
     :param fobj: WoS file name or file handle
-    :type fobj: str or file
+    :type fobj: str or file or list of strings/files
     :param str subdelimiter:
         string delimiting different parts of a multi-part field, like author(s)
     :param bool skip_empty: whether or not to skip empty fields

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import codecs
+import itertools
 import logging
 import sys
 from unicodecsv import DictReader
@@ -78,7 +79,8 @@ def get_reader(fh):
 def read(fname, using=None, encoding=None, **kwargs):
     """Read WoS export file ('tab-delimited' or 'plain text')
 
-    :param str fname: name of the WoS export file
+    :param fname: name(s) of the WoS export file(s)
+    :type fname: str or iterable of strings
     :param using:
         class used for reading `fname`. If None, we try to automatically
         find best reader
@@ -90,6 +92,10 @@ def read(fname, using=None, encoding=None, **kwargs):
         value dict
 
     """
+    if not isinstance(fname, str):
+        # fname is an iterable of file names
+        return itertools.chain.from_iterable(read(fn) for fn in fname)
+
     if encoding is None:
         with open(fname, 'rb') as fh:
             encoding = sniff_encoding(fh)

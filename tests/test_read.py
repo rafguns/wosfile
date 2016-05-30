@@ -57,6 +57,28 @@ def test_read_actual_data():
             assert_no_bom(rec)
 
 
+def test_read_multiple_files():
+    data = [preamble_b + b"PT J\nAU John Doe\nER\nEF",
+            preamble_b + b"PT T\nAU Mary Stuart\nER\nEF"]
+    expected = [{"PT": "J", "AU": "John Doe"},
+                {"PT": "T", "AU": "Mary Stuart"}]
+
+    import tempfile
+    files = []
+    for d in data:
+        fd, fname = tempfile.mkstemp()
+        with open(fname, 'wb') as f:
+            f.write(d)
+        files.append((fd, fname))
+
+    for rec, exp in zip(read([fname for _, fname in files]), expected):
+        assert_equal(rec, exp)
+
+    for fd, fname in files:
+        os.close(fd)
+        os.unlink(fname)
+
+
 class TestPlainTextReader:
     @raises(ReadError)
     def test_wrong_format(self):
