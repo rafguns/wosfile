@@ -105,7 +105,7 @@ PT J\nAU Mary\nER\nEF"""
 
 def test_records_from_multiple_files():
     data = [b"FN Thomson Reuters Web of Science\nVR 1.0\n"
-            b"PT J\nAU John\nER",
+            b"PT J\nAU John\nER\nEF",
             b"FN Thomson Reuters Web of Science\nVR 1.0\n"
             b"PT J\nAU Mary\nER\nEF"]
 
