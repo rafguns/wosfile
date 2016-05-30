@@ -80,3 +80,8 @@ tags = (
 )
 is_iterable = {abbr: iterable for abbr, _, iterable, _ in tags}
 has_item_per_line = {abbr: item_per_line for abbr, _, _, item_per_line in tags}
+
+# C1 is treated specially.
+is_address_field = dict.fromkeys([t[0] for t in tags], False)
+is_address_field['C1'] = True
+print(is_address_field)

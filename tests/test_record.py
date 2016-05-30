@@ -1,4 +1,4 @@
-from wos.record import Record, records_from
+from wos.record import Record, records_from, parse_address_field
 
 from nose.tools import *
 
@@ -24,7 +24,6 @@ class TestRecord:
         assert_equal(rec.skip_empty, False)
 
     def test_parse(self):
-        # TODO: make Record accept
         rec = Record()
         rec.parse(self.data)
 
@@ -45,12 +44,29 @@ class TestRecord:
         rec.parse(self.data)
         assert 'AB' in rec
 
-    def test_parse_multiple_addresses(self):
-        """Correctly split C1 (address) records like [A; B] foo; [C; D] bar"""
-
     def test_record_id(self):
         rec = Record(self.data)
         assert_equal(rec.record_id, 'Doe J, 2016, J9, V4, P102, DOI 123')
+
+
+def test_parse_address_field_simple():
+    """Correctly split C1 (address) records like foo; bar; baz"""
+    value = "Address A, Q; Address B, C; Address D, E"
+    res = parse_address_field(value)
+    expected = ['Address A, Q', 'Address B, C', 'Address D, E']
+    assert_equal(res, expected)
+
+
+def test_parse_address_field_complex():
+    """Correctly split C1 (address) records like [A; B] foo; [C; D] bar"""
+    value = "[A; B] address AB; [C] address C 1; [C] address C 2; "\
+            "[C; D] address CD"
+    res = parse_address_field(value)
+    expected = {'A': ['address AB'],
+                'B': ['address AB'],
+                'C': ['address C 1', 'address C 2', 'address CD'],
+                'D': ['address CD']}
+    assert_dict_equal(res, expected)
 
 
 def test_records_from():
