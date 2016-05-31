@@ -92,8 +92,8 @@ def parse_address_field(field, subdelimiter='; '):
 def records_from(fname, subdelimiter="; ", skip_empty=True, **kwargs):
     """Get records from WoS file *fobj*
 
-    :param fobj: WoS file name(s)
-    :type fobj: str or list of strings
+    :param fname: WoS file name(s)
+    :type fname: str or list of strings
     :param str subdelimiter:
         string delimiting different parts of a multi-part field, like author(s)
     :param bool skip_empty: whether or not to skip empty fields
