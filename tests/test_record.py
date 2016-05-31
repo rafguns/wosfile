@@ -86,23 +86,6 @@ PT J\nAU Mary\nER\nEF"""
         assert_equal(res, Record(exp))
 
 
-def test_records_from_file_object():
-    data = b"""FN Thomson Reuters Web of Science\nVR 1.0
-PT J\nAU John\nER
-PT J\nAU Mary\nER\nEF"""
-
-    fd, fname = tempfile.mkstemp()
-    with open(fname, 'wb') as f:
-        f.write(data)
-
-    with open(fname) as f:
-        results = list(records_from(fname))
-        expected = [{'PT': 'J', 'AU': 'John'}, {'PT': 'J', 'AU': 'Mary'}]
-        for res, exp in zip(results, expected):
-            assert_is_instance(res, Record)
-            assert_equal(res, Record(exp))
-
-
 def test_records_from_multiple_files():
     data = [b"FN Thomson Reuters Web of Science\nVR 1.0\n"
             b"PT J\nAU John\nER\nEF",
