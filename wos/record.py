@@ -89,11 +89,11 @@ def parse_address_field(field, subdelimiter='; '):
     return parsed
 
 
-def records_from(fobj, subdelimiter="; ", skip_empty=True, **kwargs):
+def records_from(fname, subdelimiter="; ", skip_empty=True, **kwargs):
     """Get records from WoS file *fobj*
 
-    :param fobj: WoS file name or file handle
-    :type fobj: str or file or list of strings/files
+    :param fobj: WoS file name(s)
+    :type fobj: str or list of strings
     :param str subdelimiter:
         string delimiting different parts of a multi-part field, like author(s)
     :param bool skip_empty: whether or not to skip empty fields
@@ -102,5 +102,5 @@ def records_from(fobj, subdelimiter="; ", skip_empty=True, **kwargs):
         :py:class:`wos.Record`
 
     """
-    for wos_record in read(fobj, **kwargs):
+    for wos_record in read(fname, **kwargs):
         yield Record(wos_record, subdelimiter, skip_empty)
