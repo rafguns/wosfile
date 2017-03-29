@@ -8,6 +8,7 @@ from .tags import is_address_field, is_iterable
 
 __all__ = [
     "Record",
+    "parse_address_field",
     "records_from",
 ]
 
