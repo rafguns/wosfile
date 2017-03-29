@@ -10,7 +10,7 @@ setup(
     license='New BSD License',
     author='Raf Guns',
     tests_require=['nose'],
-    install_requires=['unicodecsv==0.13'],
+    install_requires=["unicodecsv==0.14.1 ; python_version < '3'"],
     author_email='raf.guns@uantwerpen.be',
     description='Handle Thomson Reuters Web of Science™ export files',
     long_description=long_description,

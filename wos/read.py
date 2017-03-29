@@ -3,13 +3,14 @@ from __future__ import unicode_literals
 import codecs
 import logging
 import sys
-from unicodecsv import DictReader
 
 PY2 = sys.version_info[0] == 2
 if PY2:
     from io import open
+    from unicodecsv import DictReader
 else:
     basestring = str
+    from csv import DictReader
 
 from .tags import has_item_per_line
 
