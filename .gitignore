@@ -41,3 +41,7 @@ nosetests.xml
 .project
 .pydevproject
 .idea
+
+# Other
+.cache
+.ipynb*
