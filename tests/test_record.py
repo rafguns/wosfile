@@ -1,3 +1,4 @@
+import tempfile
 from wos.record import Record, records_from, parse_address_field
 
 from nose.tools import *
@@ -70,8 +71,6 @@ def test_parse_address_field_complex():
 
 
 def test_records_from():
-    import tempfile
-
     data = b"""FN Thomson Reuters Web of Science\nVR 1.0
 PT J\nAU John\nER
 PT J\nAU Mary\nER\nEF"""
@@ -81,6 +80,26 @@ PT J\nAU Mary\nER\nEF"""
         f.write(data)
 
     results = list(records_from(fname))
+    expected = [{'PT': 'J', 'AU': 'John'}, {'PT': 'J', 'AU': 'Mary'}]
+    for res, exp in zip(results, expected):
+        assert_is_instance(res, Record)
+        assert_equal(res, Record(exp))
+
+
+def test_records_from_multiple_files():
+    data = [b"FN Thomson Reuters Web of Science\nVR 1.0\n"
+            b"PT J\nAU John\nER\nEF",
+            b"FN Thomson Reuters Web of Science\nVR 1.0\n"
+            b"PT J\nAU Mary\nER\nEF"]
+
+    files = []
+    for d in data:
+        fd, fname = tempfile.mkstemp()
+        with open(fname, 'wb') as f:
+            f.write(d)
+        files.append((fd, fname))
+
+    results = list(records_from([fname for _, fname in files]))
     expected = [{'PT': 'J', 'AU': 'John'}, {'PT': 'J', 'AU': 'Mary'}]
     for res, exp in zip(results, expected):
         assert_is_instance(res, Record)

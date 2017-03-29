@@ -8,6 +8,8 @@ from unicodecsv import DictReader
 PY2 = sys.version_info[0] == 2
 if PY2:
     from io import open
+else:
+    basestring = str
 
 from .tags import has_item_per_line
 
@@ -78,7 +80,8 @@ def get_reader(fh):
 def read(fname, using=None, encoding=None, **kwargs):
     """Read WoS export file ('tab-delimited' or 'plain text')
 
-    :param str fname: name of the WoS export file
+    :param fname: name(s) of the WoS export file(s)
+    :type fname: str or iterable of strings
     :param using:
         class used for reading `fname`. If None, we try to automatically
         find best reader
@@ -90,20 +93,27 @@ def read(fname, using=None, encoding=None, **kwargs):
         value dict
 
     """
-    if encoding is None:
-        with open(fname, 'rb') as fh:
-            encoding = sniff_encoding(fh)
+    if not isinstance(fname, basestring):
+        # fname is an iterable of file names
+        for actual_fname in fname:
+            for record in read(actual_fname):
+                yield record
 
-    if using is None:
-        with open(fname, 'rt', encoding=encoding) as fh:
-            reader_class = get_reader(fh)
     else:
-        reader_class = using
+        if encoding is None:
+            with open(fname, 'rb') as fh:
+                encoding = sniff_encoding(fh)
 
-    with open(fname, 'rt', encoding=encoding) as fh:
-        reader = reader_class(fh, **kwargs)
-        for record in reader:
-            yield record
+        if using is None:
+            with open(fname, 'rt', encoding=encoding) as fh:
+                reader_class = get_reader(fh)
+        else:
+            reader_class = using
+
+        with open(fname, 'rt', encoding=encoding) as fh:
+            reader = reader_class(fh, **kwargs)
+            for record in reader:
+                yield record
 
 
 class TabDelimitedReader(object):
