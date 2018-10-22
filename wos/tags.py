@@ -26,6 +26,7 @@ tags = (
     ("CT", "Conference Title", False, False),
     ("CY", "Conference Date", False, False),
     ("CL", "Conference Location", False, False),
+    ("DA", "Date this report was generated", False, False),
     ("DE", "Author Keywords", True, False),
     ("DI", "Digital Object Identifier (DOI)", False, False),
     ("DT", "Document Type", False, False),
@@ -39,7 +40,9 @@ tags = (
     ("FX", "Funding Text", False, False),
     ("GA", "Document Delivery Number", False, False),
     ("GP", "Book Group Authors", False, False),
+    ("HC", "ESI Highly Cited Paper", False, False),
     ("HO", "Conference Host", False, False),
+    ("HP", "ESI Hot Paper", False, False),
     ("ID", "Keywords Plus", True, False),
     ("IS", "Issue", False, False),
     ("J9", "29-Character Source Abbreviation", False, False),
@@ -47,6 +50,7 @@ tags = (
     ("LA", "Language", False, False),
     ("MA", "Meeting Abstract", False, False),
     ("NR", "Cited Reference Count", False, False),
+    ("OA", "Open Access Indicator", False, False),
     ("OI", "ORCID Identifier "
            "(Open Researcher and Contributor ID)", True, False),
     ("P2", "Chapter count (Book Citation Index)", False, False),
@@ -84,4 +88,3 @@ has_item_per_line = {abbr: item_per_line for abbr, _, _, item_per_line in tags}
 # C1 is treated specially.
 is_address_field = dict.fromkeys([t[0] for t in tags], False)
 is_address_field['C1'] = True
-print(is_address_field)
