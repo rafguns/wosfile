@@ -143,7 +143,7 @@ class TestPlainTextReader:
 
     def test_wos_plaintext(self):
         # utf-8-sig = UTF-8 with BOM
-        with open("data/wos_plaintext.txt", "rt", encoding="utf-8-sig") as fh:
+        with open("data/wos_plaintext.txt", encoding="utf-8-sig") as fh:
             r = PlainTextReader(fh)
             for _ in r:
                 pass
@@ -181,7 +181,7 @@ class TestTabDelimitedReader:
 
     def test_wos_tabdelimited_utf16(self):
         with open(
-            "data/wos_tab_delimited_win_utf16.txt", "rt", encoding="utf-16"
+            "data/wos_tab_delimited_win_utf16.txt", encoding="utf-16"
         ) as fh:
             r = TabDelimitedReader(fh)
             for record in r:
@@ -189,7 +189,7 @@ class TestTabDelimitedReader:
 
     def test_wos_tabdelimited_utf8(self):
         with open(
-            "data/wos_tab_delimited_win_utf8.txt", "rt", encoding="utf-8-sig"
+            "data/wos_tab_delimited_win_utf8.txt", encoding="utf-8-sig"
         ) as fh:
             r = TabDelimitedReader(fh)
             for record in r:
