@@ -45,3 +45,4 @@ nosetests.xml
 # Other
 .cache
 .ipynb*
+.mypy_cache
