@@ -132,11 +132,6 @@ class TestPlainTextReader:
         expected = {"PT": "abc", "SO": "J.Whatever", "AF": "Here; be; dragons"}
         assert_dict_equal(next(r), expected)
 
-        f.seek(0)
-        r = PlainTextReader(f, subdelimiter="##")
-        expected["AF"] = "Here##be##dragons"
-        assert_dict_equal(next(r), expected)
-
     def test_multiline_fields_nosplit(self):
         f = StringIO(
             preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes" "\nER\nEF"

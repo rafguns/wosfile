@@ -12,17 +12,13 @@ def split_by(string, delimiter):
 
 
 class Record(dict):
-    def __init__(self, wos_data=None, subdelimiter="; ", skip_empty=True):
+    def __init__(self, wos_data=None, skip_empty=True):
         """Create a record based on *wos_data*
 
         :param dict wos_data: a WoS record
-        :param str subdelimiter:
-            string delimiting different parts of a multi-part field,
-            like author(s)
         :param bool skip_empty: whether or not to skip empty fields
 
         """
-        self.subdelimiter = subdelimiter
         self.skip_empty = skip_empty
         if wos_data:
             self.parse(wos_data)
@@ -38,9 +34,9 @@ class Record(dict):
             if self.skip_empty and not v:
                 continue
             if is_address_field[k]:
-                v = parse_address_field(v, self.subdelimiter)
+                v = parse_address_field(v)
             elif is_iterable[k]:
-                v = split_by(v, self.subdelimiter)
+                v = split_by(v, ";")
             self[k] = v
 
     @property
@@ -60,7 +56,7 @@ class Record(dict):
         )
 
 
-def parse_address_field(field, subdelimiter="; "):
+def parse_address_field(field):
     """Parse author address field into author -> addresses dict"""
     # Only addresses, no authors
     if not field.startswith("["):
@@ -79,7 +75,7 @@ def parse_address_field(field, subdelimiter="; "):
     address_fields = re.split(r";(?=\s*\[)", field)
     for address_field in address_fields:
         authors, address = address_field_re.match(address_field).groups()
-        authors = split_by(authors, subdelimiter)
+        authors = split_by(authors, ";")
 
         for author in authors:
             parsed[author].append(address)
@@ -87,13 +83,11 @@ def parse_address_field(field, subdelimiter="; "):
     return parsed
 
 
-def records_from(fname, subdelimiter="; ", skip_empty=True, **kwargs):
+def records_from(fname, skip_empty=True, **kwargs):
     """Get records from WoS file *fobj*
 
     :param fname: WoS file name(s)
     :type fname: str or list of strings
-    :param str subdelimiter:
-        string delimiting different parts of a multi-part field, like author(s)
     :param bool skip_empty: whether or not to skip empty fields
     :return:
         iterator over parsed records in *fobj*, where each parsed record is a
@@ -101,4 +95,4 @@ def records_from(fname, subdelimiter="; ", skip_empty=True, **kwargs):
 
     """
     for wos_record in read(fname, **kwargs):
-        yield Record(wos_record, subdelimiter, skip_empty)
+        yield Record(wos_record, skip_empty)

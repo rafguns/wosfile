@@ -128,7 +128,7 @@ class TabDelimitedReader(object):
 
 
 class PlainTextReader(object):
-    def __init__(self, fh, subdelimiter="; "):
+    def __init__(self, fh):
         """Create a reader for WoS plain text file `fh`
 
         If you do not know the format of a file, the :func:`.read` function
@@ -136,13 +136,9 @@ class PlainTextReader(object):
 
         :param fh: WoS plain text file, opened in text mode(!)
         :type fh: file object
-        :param str subdelimiter:
-            string delimiting different parts of a multi-part field,
-            like author(s)
 
         """
         self.fh = fh
-        self.subdelimiter = subdelimiter
         self.version = "1.0"  # Expected version of WoS plain text format
         self.current_line = 0
 
@@ -194,7 +190,7 @@ class PlainTextReader(object):
 
     def _format_values(self, heading, values):
         if has_item_per_line[heading]:  # Iterable field with one item per line
-            return self.subdelimiter.join(values)
+            return "; ".join(values)
         else:
             return " ".join(values)
 
