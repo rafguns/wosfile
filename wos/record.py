@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import re
 from collections import defaultdict
 
@@ -79,7 +77,7 @@ def parse_address_field(field, subdelimiter='; '):
                                   """, re.VERBOSE)
     parsed = defaultdict(list)
 
-    address_fields = re.split(';(?=\s*\[)', field)
+    address_fields = re.split(r';(?=\s*\[)', field)
     for address_field in address_fields:
         authors, address = address_field_re.match(address_field).groups()
         authors = split_by(authors, subdelimiter)

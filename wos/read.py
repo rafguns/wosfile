@@ -1,16 +1,7 @@
-from __future__ import unicode_literals
-
 import codecs
 import logging
 import sys
-
-PY2 = sys.version_info[0] == 2
-if PY2:
-    from io import open
-    from unicodecsv import DictReader
-else:
-    basestring = str
-    from csv import DictReader
+from csv import DictReader
 
 from .tags import has_item_per_line
 
@@ -94,7 +85,7 @@ def read(fname, using=None, encoding=None, **kwargs):
         value dict
 
     """
-    if not isinstance(fname, basestring):
+    if not isinstance(fname, str):
         # fname is an iterable of file names
         for actual_fname in fname:
             for record in read(actual_fname):
@@ -129,18 +120,9 @@ class TabDelimitedReader(object):
         :type fh: file object
 
         """
-        # unicodecsv expects byte strings but TabDelimitedReader works with
-        # Unicode strings. Hence, we encode everything.
-        if PY2:
-            def as_utf8(f):
-                return (line.encode('utf-8') for line in f)
-            kwargs.update({'encoding': 'utf-8'})
-            fh = as_utf8(fh)
-        # Delimiter should be byte string in Py2 -- wrapping it with str(), we
-        # get bytes in Py2 and Unicode string in Py3.
-        self.reader = DictReader(fh, delimiter=str("\t"), **kwargs)
+        self.reader = DictReader(fh, delimiter="\t", **kwargs)
 
-    def next(self):
+    def __next__(self):
         record = next(self.reader)
         # Since WoS files have a spurious tab at the end of each line, we
         # may get a 'ghost' None key.
@@ -149,7 +131,6 @@ class TabDelimitedReader(object):
         except KeyError:
             pass
         return record
-    __next__ = next
 
     def __iter__(self):
         return self
@@ -223,7 +204,7 @@ class PlainTextReader(object):
         else:
             return " ".join(values)
 
-    def next(self):
+    def __next__(self):
         record = {}
         values = []
         heading = ""
@@ -244,7 +225,6 @@ class PlainTextReader(object):
         record[heading] = self._format_values(heading, values)
 
         return record
-    __next__ = next
 
     def __iter__(self):
         return self
