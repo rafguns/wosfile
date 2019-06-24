@@ -150,7 +150,7 @@ class TestPlainTextReader:
         # utf-8-sig = UTF-8 with BOM
         with open("data/wos_plaintext.txt", "rt", encoding="utf-8-sig") as fh:
             r = PlainTextReader(fh)
-            for record in r:
+            for _ in r:
                 pass
 
 

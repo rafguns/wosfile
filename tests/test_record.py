@@ -80,7 +80,7 @@ def test_records_from():
 PT J\nAU John\nER
 PT J\nAU Mary\nER\nEF"""
 
-    fd, fname = tempfile.mkstemp()
+    _, fname = tempfile.mkstemp()
     with open(fname, "wb") as f:
         f.write(data)
 
