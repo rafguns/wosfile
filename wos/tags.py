@@ -33,8 +33,7 @@ tags = (
     ("D2", "Book Digital Object Identifier (DOI)", False, False),
     ("ED", "Editors", False, False),
     ("EM", "E-mail Address", True, False),
-    ("EI", "Electronic International Standard Serial Number "
-           "(eISSN)", False, False),
+    ("EI", "Electronic International Standard Serial Number " "(eISSN)", False, False),
     ("EP", "Ending Page", False, False),
     ("FU", "Funding Agency and Grant Number", False, False),
     ("FX", "Funding Text", False, False),
@@ -51,8 +50,7 @@ tags = (
     ("MA", "Meeting Abstract", False, False),
     ("NR", "Cited Reference Count", False, False),
     ("OA", "Open Access Indicator", False, False),
-    ("OI", "ORCID Identifier "
-           "(Open Researcher and Contributor ID)", True, False),
+    ("OI", "ORCID Identifier " "(Open Researcher and Contributor ID)", True, False),
     ("P2", "Chapter count (Book Citation Index)", False, False),
     ("PA", "Publisher Address", False, False),
     ("PD", "Publication Date", False, False),
@@ -60,8 +58,7 @@ tags = (
     ("PI", "Publisher City", False, False),
     ("PM", "PubMed ID", False, False),
     ("PN", "Part Number", False, False),
-    ("PT", "Publication Type "
-           "(J=Journal; B=Book; S=Series; P=Patent)", False, False),
+    ("PT", "Publication Type " "(J=Journal; B=Book; S=Series; P=Patent)", False, False),
     ("PU", "Publisher", False, False),
     ("PY", "Year Published", False, False),
     ("RI", "ResearcherID Number", True, False),
@@ -80,11 +77,11 @@ tags = (
     ("UT", "Unique Article Identifier", False, False),
     ("VL", "Volume", False, False),
     ("WC", "Web of Science Categories", True, False),
-    ("Z9", "Total Times Cited Count (WoS Core, BCI, and CSCD)", False, False)
+    ("Z9", "Total Times Cited Count (WoS Core, BCI, and CSCD)", False, False),
 )
 is_iterable = {abbr: iterable for abbr, _, iterable, _ in tags}
 has_item_per_line = {abbr: item_per_line for abbr, _, _, item_per_line in tags}
 
 # C1 is treated specially.
 is_address_field = dict.fromkeys([t[0] for t in tags], False)
-is_address_field['C1'] = True
+is_address_field["C1"] = True

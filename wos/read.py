@@ -7,13 +7,7 @@ from .tags import has_item_per_line
 
 logger = logging.getLogger(__name__)
 
-__all__ = [
-    "get_reader",
-    "read",
-    "PlainTextReader",
-    "ReadError",
-    "TabDelimitedReader",
-]
+__all__ = ["get_reader", "read", "PlainTextReader", "ReadError", "TabDelimitedReader"]
 
 
 class ReadError(Exception):
@@ -45,13 +39,12 @@ def sniff_encoding(fh):
     # respectively. When dealing with files with BOM, avoid the encodings
     # 'utf-8' (which is fine for non-BOM UTF-8), 'utf-16-le', and 'utf-16-be'.
     # See e.g. http://stackoverflow.com/a/8827604
-    encodings = {codecs.BOM_UTF16: 'utf-16',
-                 codecs.BOM_UTF8: 'utf-8-sig'}
+    encodings = {codecs.BOM_UTF16: "utf-16", codecs.BOM_UTF8: "utf-8-sig"}
     for bom, encoding in encodings.items():
         if sniff.startswith(bom):
             return encoding
     # WoS export files are either UTF-8 or UTF-16
-    return 'utf-8'
+    return "utf-8"
 
 
 def get_reader(fh):
@@ -64,8 +57,9 @@ def get_reader(fh):
         reader = TabDelimitedReader
     else:
         # XXX TODO Raised for empty file -- not very elegant
-        raise ReadError("Could not determine appropriate reader for file "
-                        "{}".format(fh))
+        raise ReadError(
+            "Could not determine appropriate reader for file " "{}".format(fh)
+        )
     return reader
 
 
@@ -93,23 +87,22 @@ def read(fname, using=None, encoding=None, **kwargs):
 
     else:
         if encoding is None:
-            with open(fname, 'rb') as fh:
+            with open(fname, "rb") as fh:
                 encoding = sniff_encoding(fh)
 
         if using is None:
-            with open(fname, 'rt', encoding=encoding) as fh:
+            with open(fname, "rt", encoding=encoding) as fh:
                 reader_class = get_reader(fh)
         else:
             reader_class = using
 
-        with open(fname, 'rt', encoding=encoding) as fh:
+        with open(fname, "rt", encoding=encoding) as fh:
             reader = reader_class(fh, **kwargs)
             for record in reader:
                 yield record
 
 
 class TabDelimitedReader(object):
-
     def __init__(self, fh, **kwargs):
         """Create a reader for tab-delimited file `fh` exported fom WoS
 
@@ -137,7 +130,6 @@ class TabDelimitedReader(object):
 
 
 class PlainTextReader(object):
-
     def __init__(self, fh, subdelimiter="; "):
         """Create a reader for WoS plain text file `fh`
 
@@ -163,8 +155,10 @@ class PlainTextReader(object):
         line = self._next_nonempty_line()
         label, version = line.split()
         if label != "VR" or version != self.version:
-            raise ReadError("Unknown version: expected {} "
-                            "but got {}".format(self.version, version))
+            raise ReadError(
+                "Unknown version: expected {} "
+                "but got {}".format(self.version, version)
+            )
 
     def _next_line(self):
         """Get next line as Unicode"""
@@ -190,7 +184,8 @@ class PlainTextReader(object):
                 if lines:  # We're in the middle of a record!
                     raise ReadError(
                         "Encountered unexpected end of file marker EF on "
-                        "line {}".format(self.current_line))
+                        "line {}".format(self.current_line)
+                    )
                 else:  # End of file
                     raise StopIteration
             if line.startswith("ER"):  # end of record

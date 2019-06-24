@@ -1,11 +1,11 @@
 import os
 import sys
+import tempfile
 from io import StringIO
 
 from nose.tools import assert_dict_equal, assert_equal, assert_raises, raises
 
-from wos.read import (PlainTextReader, ReadError, TabDelimitedReader,
-                      get_reader, read)
+from wos.read import PlainTextReader, ReadError, TabDelimitedReader, get_reader, read
 
 preamble_b = b"""FN Thomson Reuters Web of Science
 VR 1.0
@@ -15,7 +15,7 @@ preamble_s = preamble_b.decode("utf-8")
 
 def assert_no_bom(record):
     # very basic way of asserting that we've successfully stripped the BOM
-    assert u'PT' in record
+    assert u"PT" in record
 
 
 def test_get_reader():
@@ -33,9 +33,8 @@ def test_read():
     data = preamble_b + b"PT J\nAU John Doe\nER\nEF"
     expected = {"PT": "J", "AU": "John Doe"}
 
-    import tempfile
     fd, fname = tempfile.mkstemp()
-    with open(fname, 'wb') as f:
+    with open(fname, "wb") as f:
         f.write(data)
     for res in (list(read(fname)), list(read(fname, using=PlainTextReader))):
         assert_equal(len(res), 1)
@@ -46,23 +45,26 @@ def test_read():
 
 
 def test_read_actual_data():
-    for fname in ('wos_plaintext.txt', 'wos_tab_delimited_win_utf8.txt',
-                  'wos_tab_delimited_win_utf16.txt'):
-        for rec in read('data/' + fname):
+    for fname in (
+        "wos_plaintext.txt",
+        "wos_tab_delimited_win_utf8.txt",
+        "wos_tab_delimited_win_utf16.txt",
+    ):
+        for rec in read("data/" + fname):
             assert_no_bom(rec)
 
 
 def test_read_multiple_files():
-    data = [preamble_b + b"PT J\nAU John Doe\nER\nEF",
-            preamble_b + b"PT T\nAU Mary Stuart\nER\nEF"]
-    expected = [{"PT": "J", "AU": "John Doe"},
-                {"PT": "T", "AU": "Mary Stuart"}]
+    data = [
+        preamble_b + b"PT J\nAU John Doe\nER\nEF",
+        preamble_b + b"PT T\nAU Mary Stuart\nER\nEF",
+    ]
+    expected = [{"PT": "J", "AU": "John Doe"}, {"PT": "T", "AU": "Mary Stuart"}]
 
-    import tempfile
     files = []
     for d in data:
         fd, fname = tempfile.mkstemp()
-        with open(fname, 'wb') as f:
+        with open(fname, "wb") as f:
             f.write(d)
         files.append((fd, fname))
 
@@ -105,25 +107,29 @@ class TestPlainTextReader:
         assert_dict_equal(next(r), expected)
 
     def test_multiple_records(self):
-        f = StringIO(preamble_s + "PT abc\nAU xyz\nER\n\nPT abc2\n AU xyz2\n"
-                     "AB abstract\nER\nEF")
+        f = StringIO(
+            preamble_s + "PT abc\nAU xyz\nER\n\nPT abc2\n AU xyz2\n"
+            "AB abstract\nER\nEF"
+        )
         r = PlainTextReader(f)
 
         results = list(r)
-        expected = [{"PT": "abc", "AU": "xyz"},
-                    {"PT": "abc2", "AU": "xyz2", "AB": "abstract"}]
+        expected = [
+            {"PT": "abc", "AU": "xyz"},
+            {"PT": "abc2", "AU": "xyz2", "AB": "abstract"},
+        ]
 
         assert_equal(len(results), len(expected))
         for result, exp in zip(results, expected):
             assert_dict_equal(result, exp)
 
     def test_multiline_fields_split(self):
-        f = StringIO(preamble_s + "PT abc\nSO J.Whatever\nAF Here\n   be\n"
-                     "   dragons\nER\nEF")
+        f = StringIO(
+            preamble_s + "PT abc\nSO J.Whatever\nAF Here\n   be\n" "   dragons\nER\nEF"
+        )
 
         r = PlainTextReader(f)
-        expected = {"PT": "abc", "SO": "J.Whatever",
-                    "AF": "Here; be; dragons"}
+        expected = {"PT": "abc", "SO": "J.Whatever", "AF": "Here; be; dragons"}
         assert_dict_equal(next(r), expected)
 
         f.seek(0)
@@ -132,8 +138,9 @@ class TestPlainTextReader:
         assert_dict_equal(next(r), expected)
 
     def test_multiline_fields_nosplit(self):
-        f = StringIO(preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes"
-                     "\nER\nEF")
+        f = StringIO(
+            preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes" "\nER\nEF"
+        )
 
         r = PlainTextReader(f)
         expected = {"PT": "abc", "SC": "Here; there be dragons; Yes"}
@@ -148,7 +155,6 @@ class TestPlainTextReader:
 
 
 class TestTabDelimitedReader:
-
     def test_one_record(self):
         f = StringIO("PT\tAF\tC1\nJ\tAa; Bb\tX; Y")
 
@@ -162,8 +168,10 @@ class TestTabDelimitedReader:
         r = TabDelimitedReader(f)
 
         results = [result for result in r]
-        expected = [{"PT": "J", "AF": "Aa; Bb", "C1": "X; Y"},
-                    {"PT": "J", "AF": "Bb; Cc", "C1": "Y; Z"}]
+        expected = [
+            {"PT": "J", "AF": "Aa; Bb", "C1": "X; Y"},
+            {"PT": "J", "AF": "Bb; Cc", "C1": "Y; Z"},
+        ]
 
         assert_equal(len(results), len(expected))
         for result, exp in zip(results, expected):
@@ -177,22 +185,25 @@ class TestTabDelimitedReader:
         assert_dict_equal(next(r), expected)
 
     def test_wos_tabdelimited_utf16(self):
-        with open("data/wos_tab_delimited_win_utf16.txt", "rt",
-                  encoding="utf-16") as fh:
+        with open(
+            "data/wos_tab_delimited_win_utf16.txt", "rt", encoding="utf-16"
+        ) as fh:
             r = TabDelimitedReader(fh)
             for record in r:
                 assert_no_bom(record)
 
     def test_wos_tabdelimited_utf8(self):
-        with open("data/wos_tab_delimited_win_utf8.txt", "rt",
-                  encoding="utf-8-sig") as fh:
+        with open(
+            "data/wos_tab_delimited_win_utf8.txt", "rt", encoding="utf-8-sig"
+        ) as fh:
             r = TabDelimitedReader(fh)
             for record in r:
                 assert_no_bom(record)
 
+
 # This fails because of small differences between content of fields in the two
 # formats...
-#def test_plaintext_tabdelimited_equivalent():
+# def test_plaintext_tabdelimited_equivalent():
 #    with open("data/wos_plaintext.txt") as plaintext,\
 #            open("data/wos_tab_delimited_win_utf8.txt") as tabdelimited:
 #        pt_reader = PlainTextReader(plaintext)

@@ -4,11 +4,7 @@ from collections import defaultdict
 from .read import read
 from .tags import is_address_field, is_iterable
 
-__all__ = [
-    "Record",
-    "parse_address_field",
-    "records_from",
-]
+__all__ = ["Record", "parse_address_field", "records_from"]
 
 
 def split_by(string, delimiter):
@@ -52,32 +48,35 @@ class Record(dict):
         """Get WoS record ID for current data"""
         import re
 
-        first_author = re.sub(r'(.*), (.*)', r'\1 \2', self["AU"][0])
+        first_author = re.sub(r"(.*), (.*)", r"\1 \2", self["AU"][0])
         year = self["PY"]
-        journal = self.get("J9",
-                           self.get("BS", self.get("SO")))
+        journal = self.get("J9", self.get("BS", self.get("SO")))
         volume = "V" + self["VL"] if "VL" in self else None
         page = "P" + self["BP"] if "BP" in self else None
         doi = "DOI " + self["DI"] if "DI" in self else None
 
-        return ", ".join(item for item in (first_author, year, journal,
-                                           volume, page, doi) if item)
+        return ", ".join(
+            item for item in (first_author, year, journal, volume, page, doi) if item
+        )
 
 
-def parse_address_field(field, subdelimiter='; '):
+def parse_address_field(field, subdelimiter="; "):
     """Parse author address field into author -> addresses dict"""
     # Only addresses, no authors
-    if not field.startswith('['):
-        addresses = field.split('; ')
+    if not field.startswith("["):
+        addresses = field.split("; ")
         return addresses
 
     # Addresses with authors
-    address_field_re = re.compile(r"""\s*\[(.*?)\] # Author part
-                                  \s+(.*)          # Address part
-                                  """, re.VERBOSE)
+    address_field_re = re.compile(
+        r"""\s*\[(.*?)\] # Author part
+        \s+(.*)          # Address part
+        """,
+        re.VERBOSE,
+    )
     parsed = defaultdict(list)
 
-    address_fields = re.split(r';(?=\s*\[)', field)
+    address_fields = re.split(r";(?=\s*\[)", field)
     for address_field in address_fields:
         authors, address = address_field_re.match(address_field).groups()
         authors = split_by(authors, subdelimiter)
