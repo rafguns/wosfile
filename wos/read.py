@@ -57,9 +57,7 @@ def get_reader(fh):
         reader = TabDelimitedReader
     else:
         # XXX TODO Raised for empty file -- not very elegant
-        raise ReadError(
-            "Could not determine appropriate reader for file " "{}".format(fh)
-        )
+        raise ReadError("Could not determine appropriate reader for file {}".format(fh))
     return reader
 
 
@@ -183,8 +181,9 @@ class PlainTextReader(object):
             if line.startswith("EF"):
                 if lines:  # We're in the middle of a record!
                     raise ReadError(
-                        "Encountered unexpected end of file marker EF on "
-                        "line {}".format(self.current_line)
+                        "Encountered unexpected end of file marker EF on line {}".format(
+                            self.current_line
+                        )
                     )
                 else:  # End of file
                     raise StopIteration
