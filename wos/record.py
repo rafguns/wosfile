@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+from typing import Dict, Iterable, Iterator, List, Union
 
 from .read import read
 from .tags import is_address_field, is_iterable
@@ -7,12 +8,14 @@ from .tags import is_address_field, is_iterable
 __all__ = ["Record", "parse_address_field", "records_from"]
 
 
-def split_by(string, delimiter):
+def split_by(string: str, delimiter: str) -> List[str]:
     return [part.strip() for part in string.split(delimiter)]
 
 
 class Record(dict):
-    def __init__(self, wos_data=None, skip_empty=True):
+    def __init__(
+        self, wos_data: Dict[str, str] = None, skip_empty: bool = True
+    ) -> None:
         """Create a record based on *wos_data*
 
         :param dict wos_data: a WoS record
@@ -23,24 +26,25 @@ class Record(dict):
         if wos_data:
             self.parse(wos_data)
 
-    def parse(self, wos_data):
+    def parse(self, wos_data: Dict[str, str]) -> None:
         """Parse *wos_data* into more structured format
 
         :param dict wos_data: a WoS record
 
         """
         self.clear()
-        for k, v in wos_data.items():
-            if self.skip_empty and not v:
+        for field_name, value in wos_data.items():
+            if self.skip_empty and not value:
                 continue
-            if is_address_field[k]:
-                v = parse_address_field(v)
-            elif is_iterable[k]:
-                v = split_by(v, ";")
-            self[k] = v
+            if is_address_field[field_name]:
+                self[field_name] = parse_address_field(value)
+            elif is_iterable[field_name]:
+                self[field_name] = split_by(value, ";")
+            else:  # No parsing needed
+                self[field_name] = value
 
     @property
-    def record_id(self):
+    def record_id(self) -> str:
         """Get WoS record ID for current data"""
         import re
 
@@ -56,7 +60,7 @@ class Record(dict):
         )
 
 
-def parse_address_field(field):
+def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
     """Parse author address field into author -> addresses dict"""
     # Only addresses, no authors
     if not field.startswith("["):
@@ -70,20 +74,25 @@ def parse_address_field(field):
         """,
         re.VERBOSE,
     )
-    parsed = defaultdict(list)
+    parsed: Dict[str, List[str]] = defaultdict(list)
 
     address_fields = re.split(r";(?=\s*\[)", field)
     for address_field in address_fields:
-        authors, address = address_field_re.match(address_field).groups()
-        authors = split_by(authors, ";")
+        match = address_field_re.match(address_field)
+        if match:
+            authors, address = match.groups()
+        else:
+            raise ValueError(f"Could not parse '{address_field}' as address field")
 
-        for author in authors:
+        for author in split_by(authors, ";"):
             parsed[author].append(address)
 
     return parsed
 
 
-def records_from(fname, skip_empty=True, **kwargs):
+def records_from(
+    fname: Union[str, Iterable[str]], skip_empty: bool = True, **kwargs
+) -> Iterator[Record]:
     """Get records from WoS file *fobj*
 
     :param fname: WoS file name(s)

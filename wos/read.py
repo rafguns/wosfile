@@ -2,6 +2,19 @@ import codecs
 import logging
 import sys
 from csv import DictReader
+from typing import (
+    AnyStr,
+    BinaryIO,
+    Dict,
+    IO,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    TextIO,
+    Type,
+    Union,
+)
 
 from .tags import has_item_per_line
 
@@ -14,22 +27,29 @@ class ReadError(Exception):
     pass
 
 
-def sniff_file(fh, length=10, offset=0):
+class Reader:
+    def __init__(self, fh: TextIO, **kwargs) -> None:
+        self.fh = fh
+
+    def __iter__(self):
+        pass
+
+
+def sniff_file(fh: IO[AnyStr], length: int = 10, offset: int = 0) -> AnyStr:
     sniff = fh.read(length)
     fh.seek(offset)
 
     return sniff
 
 
-def sniff_encoding(fh):
+def sniff_encoding(fh: BinaryIO) -> str:
     """Guess encoding of file `fh`
 
     Note that this function is optimized for WoS text files and may yield
     incorrect results for other text files.
 
     :param fh: File opened in binary mode
-    :type fh: file object
-    :return: best guess encoding as str
+    :return: best guess encoding
 
     """
     sniff = sniff_file(fh)
@@ -47,21 +67,25 @@ def sniff_encoding(fh):
     return "utf-8"
 
 
-def get_reader(fh):
+def get_reader(fh: TextIO) -> Type[Reader]:
     """Get appropriate reader for the file type of `fh`"""
     sniff = sniff_file(fh)
 
     if sniff.startswith("FN "):
-        reader = PlainTextReader
+        return PlainTextReader
     elif "\t" in sniff:
-        reader = TabDelimitedReader
+        return TabDelimitedReader
     else:
         # XXX TODO Raised for empty file -- not very elegant
         raise ReadError("Could not determine appropriate reader for file {}".format(fh))
-    return reader
 
 
-def read(fname, using=None, encoding=None, **kwargs):
+def read(
+    fname: Union[str, Iterable[str]],
+    using: Optional[Type[Reader]] = None,
+    encoding: str = None,
+    **kwargs
+) -> Iterator[Dict[str, str]]:
     """Read WoS export file ('tab-delimited' or 'plain text')
 
     :param fname: name(s) of the WoS export file(s)
@@ -85,8 +109,8 @@ def read(fname, using=None, encoding=None, **kwargs):
 
     else:
         if encoding is None:
-            with open(fname, "rb") as fh:
-                encoding = sniff_encoding(fh)
+            with open(fname, "rb") as fh_sniff:
+                encoding = sniff_encoding(fh_sniff)
 
         if using is None:
             with open(fname, encoding=encoding) as fh:
@@ -100,8 +124,8 @@ def read(fname, using=None, encoding=None, **kwargs):
                 yield record
 
 
-class TabDelimitedReader(object):
-    def __init__(self, fh, **kwargs):
+class TabDelimitedReader(Reader):
+    def __init__(self, fh: TextIO, **kwargs) -> None:
         """Create a reader for tab-delimited file `fh` exported fom WoS
 
         If you do not know the encoding of a file, the :func:`.read` function
@@ -111,14 +135,15 @@ class TabDelimitedReader(object):
         :type fh: file object
 
         """
-        self.reader = DictReader(fh, delimiter="\t", **kwargs)
+        super().__init__(fh, **kwargs)
+        self.reader = DictReader(self.fh, delimiter="\t", **kwargs)
 
-    def __next__(self):
+    def __next__(self) -> Dict[str, str]:
         record = next(self.reader)
         # Since WoS files have a spurious tab at the end of each line, we
         # may get a 'ghost' None key.
         try:
-            del record[None]
+            del record[None]  # type: ignore
         except KeyError:
             pass
         return record
@@ -127,8 +152,8 @@ class TabDelimitedReader(object):
         return self
 
 
-class PlainTextReader(object):
-    def __init__(self, fh):
+class PlainTextReader(Reader):
+    def __init__(self, fh: TextIO, **kwargs) -> None:
         """Create a reader for WoS plain text file `fh`
 
         If you do not know the format of a file, the :func:`.read` function
@@ -138,7 +163,7 @@ class PlainTextReader(object):
         :type fh: file object
 
         """
-        self.fh = fh
+        super().__init__(fh, **kwargs)
         self.version = "1.0"  # Expected version of WoS plain text format
         self.current_line = 0
 
@@ -154,21 +179,21 @@ class PlainTextReader(object):
                 "but got {}".format(self.version, version)
             )
 
-    def _next_line(self):
-        """Get next line as Unicode"""
+    def _next_line(self) -> str:
+        """Get next line as string"""
         self.current_line += 1
         return next(self.fh).rstrip("\n")
 
-    def _next_nonempty_line(self):
+    def _next_nonempty_line(self) -> str:
         """Get next line that is not empty"""
         line = ""
         while not line:
             line = self._next_line()
         return line
 
-    def _next_record_lines(self):
+    def _next_record_lines(self) -> List[str]:
         """Gather lines that belong to one record"""
-        lines = []
+        lines: List[str] = []
         while True:
             try:
                 line = self._next_nonempty_line()
@@ -188,15 +213,15 @@ class PlainTextReader(object):
             else:
                 lines.append(line)
 
-    def _format_values(self, heading, values):
+    def _format_values(self, heading: str, values: List[str]) -> str:
         if has_item_per_line[heading]:  # Iterable field with one item per line
             return "; ".join(values)
         else:
             return " ".join(values)
 
-    def __next__(self):
+    def __next__(self) -> Dict[str, str]:
         record = {}
-        values = []
+        values: List[str] = []
         heading = ""
         lines = self._next_record_lines()
 
