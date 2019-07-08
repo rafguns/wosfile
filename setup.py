@@ -4,16 +4,16 @@ from setuptools import setup
 long_description = open('README.md').read()
 
 setup(
-    name='wos',
-    version='0.4',
-    url='http://github.com/rafguns/wos/',
+    name='wosfile',
+    version='0.4.1',
+    url='http://github.com/rafguns/wosfile',
     license='New BSD License',
     author='Raf Guns',
     tests_require=['nose'],
     author_email='raf.guns@uantwerpen.be',
     description='Handle Thomson Reuters Web of Science™ export files',
     long_description=long_description,
-    packages=['wos'],
+    packages=['wosfile'],
     platforms='any',
     classifiers=[
         'Intended Audience :: Science/Research',

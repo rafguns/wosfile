@@ -32,6 +32,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+.noseids
 
 # Translations
 *.mo
@@ -46,3 +47,4 @@ nosetests.xml
 .cache
 .ipynb*
 .mypy_cache
+.vscode

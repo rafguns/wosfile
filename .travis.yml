@@ -1,5 +1,6 @@
 dist: xenial  # Required for Python >= 3.7
 language: python
+cache: pip
 python:
     - "3.6"
     - "3.7"
@@ -9,7 +10,7 @@ install:
 script:
     - printenv PWD
     - pip install .
-    - nosetests --with-doctest --with-coverage --cover-package=wos
+    - nosetests --with-doctest --with-coverage --cover-package=wosfile
 after_success:
     coveralls
 deploy:
