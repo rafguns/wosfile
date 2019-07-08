@@ -100,7 +100,7 @@ def records_from(
     :param bool skip_empty: whether or not to skip empty fields
     :return:
         iterator over parsed records in *fobj*, where each parsed record is a
-        :py:class:`wos.Record`
+        :py:class:`wosfile.Record`
 
     """
     for wos_record in read(fname, **kwargs):

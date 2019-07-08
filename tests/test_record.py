@@ -1,5 +1,5 @@
 import tempfile
-from wos.record import Record, records_from, parse_address_field
+from wosfile.record import Record, records_from, parse_address_field
 
 from nose.tools import assert_dict_equal, assert_equal, assert_is_instance
 

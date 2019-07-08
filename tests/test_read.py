@@ -5,7 +5,7 @@ from io import StringIO
 
 from nose.tools import assert_dict_equal, assert_equal, assert_raises, raises
 
-from wos.read import PlainTextReader, ReadError, TabDelimitedReader, get_reader, read
+from wosfile.read import PlainTextReader, ReadError, TabDelimitedReader, get_reader, read
 
 preamble_b = b"""FN Thomson Reuters Web of Science
 VR 1.0
