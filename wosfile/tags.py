@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-# http://images.webofknowledge.com/WOKRS520B4.1/help/WOK/hs_wos_fieldtags.html
+# http://images.webofknowledge.com/WOKRS534DR1/help/WOS/hs_wos_fieldtags.html
 # Format: (Abbreviation, Full label, Iterable?, One item per line?)
 # - Abbreviation: WoS field tag
 # - Full label: full label as provided by Thomson Reuters (or abbreviation if
@@ -31,10 +31,12 @@ tags = (
     ("DI", "Digital Object Identifier (DOI)", False, False),
     ("DT", "Document Type", False, False),
     ("D2", "Book Digital Object Identifier (DOI)", False, False),
+    ("EA", "Early access date", False, False),
     ("ED", "Editors", False, False),
     ("EM", "E-mail Address", True, False),
     ("EI", "Electronic International Standard Serial Number " "(eISSN)", False, False),
     ("EP", "Ending Page", False, False),
+    ("EY", "Early access year", False, False),
     ("FU", "Funding Agency and Grant Number", False, False),
     ("FX", "Funding Text", False, False),
     ("GA", "Document Delivery Number", False, False),
@@ -50,7 +52,7 @@ tags = (
     ("MA", "Meeting Abstract", False, False),
     ("NR", "Cited Reference Count", False, False),
     ("OA", "Open Access Indicator", False, False),
-    ("OI", "ORCID Identifier " "(Open Researcher and Contributor ID)", True, False),
+    ("OI", "ORCID Identifier (Open Researcher and Contributor ID)", True, False),
     ("P2", "Chapter count (Book Citation Index)", False, False),
     ("PA", "Publisher Address", False, False),
     ("PD", "Publication Date", False, False),
