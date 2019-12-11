@@ -32,7 +32,7 @@ class Reader:
         self.fh = fh
 
     def __iter__(self):
-        pass
+        return self
 
 
 def sniff_file(fh: IO[AnyStr], length: int = 10, offset: int = 0) -> AnyStr:
@@ -148,9 +148,6 @@ class TabDelimitedReader(Reader):
             pass
         return record
 
-    def __iter__(self):
-        return self
-
 
 class PlainTextReader(Reader):
     def __init__(self, fh: TextIO, **kwargs) -> None:
@@ -240,6 +237,3 @@ class PlainTextReader(Reader):
         record[heading] = self._format_values(heading, values)
 
         return record
-
-    def __iter__(self):
-        return self
