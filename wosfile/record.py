@@ -49,7 +49,7 @@ class Record(dict):
         import re
 
         first_author = re.sub(r"(.*), (.*)", r"\1 \2", self["AU"][0])
-        year = self["PY"]
+        year = self.get("PY")
         journal = self.get("J9", self.get("BS", self.get("SO")))
         volume = "V" + self["VL"] if "VL" in self else None
         page = "P" + self["BP"] if "BP" in self else None
