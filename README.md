@@ -73,7 +73,6 @@ print(nx.info(G))
 nx.write_pajek(G, 'network.net')
 ```
 
-
 ## Other Python packages
 
 The following packages also read WoS files (+ sometimes much more):
