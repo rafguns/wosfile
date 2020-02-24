@@ -1,11 +1,16 @@
 import os
+import pytest
 import sys
 import tempfile
 from io import StringIO
 
-from nose.tools import assert_dict_equal, assert_equal, assert_raises, raises
-
-from wosfile.read import PlainTextReader, ReadError, TabDelimitedReader, get_reader, read
+from wosfile.read import (
+    PlainTextReader,
+    ReadError,
+    TabDelimitedReader,
+    get_reader,
+    read,
+)
 
 preamble_b = b"""FN Thomson Reuters Web of Science
 VR 1.0
@@ -20,12 +25,12 @@ def assert_no_bom(record):
 
 def test_get_reader():
     f = StringIO(preamble_s)
-    assert_equal(get_reader(f), PlainTextReader)
+    assert get_reader(f) == PlainTextReader
 
     f = StringIO("PT\tAF\tAU\tCU\tC1")
-    assert_equal(get_reader(f), TabDelimitedReader)
+    assert get_reader(f) == TabDelimitedReader
 
-    with assert_raises(ReadError):
+    with pytest.raises(ReadError):
         get_reader(StringIO("XY Bla\nVR 1.0"))
 
 
@@ -37,8 +42,8 @@ def test_read():
     with open(fname, "wb") as f:
         f.write(data)
     for res in (list(read(fname)), list(read(fname, using=PlainTextReader))):
-        assert_equal(len(res), 1)
-        assert_equal(res[0], expected)
+        assert len(res) == 1
+        assert res[0] == expected
         assert f.closed
     os.close(fd)
     os.unlink(fname)
@@ -69,7 +74,7 @@ def test_read_multiple_files():
         files.append((fd, fname))
 
     for rec, exp in zip(read([fname for _, fname in files]), expected):
-        assert_equal(rec, exp)
+        assert rec == exp
 
     for fd, fname in files:
         os.close(fd)
@@ -77,34 +82,34 @@ def test_read_multiple_files():
 
 
 class TestPlainTextReader:
-    @raises(ReadError)
     def test_wrong_format(self):
         f = StringIO("XY Bla\nVR 1.0")
-        PlainTextReader(f)
+        with pytest.raises(ReadError):
+            PlainTextReader(f)
 
-    @raises(ReadError)
     def test_wrong_version(self):
         f = StringIO("FN Thomson Reuters Web of Science\nVR 1.1")
-        PlainTextReader(f)
+        with pytest.raises(ReadError):
+            PlainTextReader(f)
 
-    @raises(ReadError)
     def test_forgotten_ER(self):
         f = StringIO(preamble_s + "PT abc\nAU xuz\nER\n\nPT abc2\nEF")
         r = PlainTextReader(f)
-        list(r)
+        with pytest.raises(ReadError):
+            list(r)
 
-    @raises(ReadError)
     def test_forgotten_EF(self):
         f = StringIO(preamble_s + "PT abc\nAU xuz\nER\n\nPT abc2\nER")
         r = PlainTextReader(f)
-        list(r)
+        with pytest.raises(ReadError):
+            list(r)
 
     def test_ignore_empty_lines(self):
         f = StringIO(preamble_s + "PT abc\n\nAU xyz\nER\nEF")
         r = PlainTextReader(f)
 
         expected = {"PT": "abc", "AU": "xyz"}
-        assert_dict_equal(next(r), expected)
+        assert next(r) == expected
 
     def test_multiple_records(self):
         f = StringIO(
@@ -119,9 +124,9 @@ class TestPlainTextReader:
             {"PT": "abc2", "AU": "xyz2", "AB": "abstract"},
         ]
 
-        assert_equal(len(results), len(expected))
+        assert len(results) == len(expected)
         for result, exp in zip(results, expected):
-            assert_dict_equal(result, exp)
+            assert result == exp
 
     def test_multiline_fields_split(self):
         f = StringIO(
@@ -130,7 +135,7 @@ class TestPlainTextReader:
 
         r = PlainTextReader(f)
         expected = {"PT": "abc", "SO": "J.Whatever", "AF": "Here; be; dragons"}
-        assert_dict_equal(next(r), expected)
+        assert next(r) == expected
 
     def test_multiline_fields_nosplit(self):
         f = StringIO(
@@ -139,7 +144,7 @@ class TestPlainTextReader:
 
         r = PlainTextReader(f)
         expected = {"PT": "abc", "SC": "Here; there be dragons; Yes"}
-        assert_dict_equal(next(r), expected)
+        assert next(r) == expected
 
     def test_wos_plaintext(self):
         # utf-8-sig = UTF-8 with BOM
@@ -156,7 +161,7 @@ class TestTabDelimitedReader:
         r = TabDelimitedReader(f)
         expected = {"PT": "J", "AF": "Aa; Bb", "C1": "X; Y"}
 
-        assert_dict_equal(next(r), expected)
+        assert next(r) == expected
 
     def test_multiple_records(self):
         f = StringIO("PT\tAF\tC1\nJ\tAa; Bb\tX; Y\nJ\tBb; Cc\tY; Z")
@@ -168,29 +173,25 @@ class TestTabDelimitedReader:
             {"PT": "J", "AF": "Bb; Cc", "C1": "Y; Z"},
         ]
 
-        assert_equal(len(results), len(expected))
+        assert len(results) == len(expected)
         for result, exp in zip(results, expected):
-            assert_dict_equal(result, exp)
+            assert result == exp
 
     def test_spurious_tab_at_end(self):
         f = StringIO("PT\tAU\tC1\nJ\ta\tb\t")
         r = TabDelimitedReader(f)
 
         expected = {"PT": "J", "AU": "a", "C1": "b"}
-        assert_dict_equal(next(r), expected)
+        assert next(r) == expected
 
     def test_wos_tabdelimited_utf16(self):
-        with open(
-            "data/wos_tab_delimited_win_utf16.txt", encoding="utf-16"
-        ) as fh:
+        with open("data/wos_tab_delimited_win_utf16.txt", encoding="utf-16") as fh:
             r = TabDelimitedReader(fh)
             for record in r:
                 assert_no_bom(record)
 
     def test_wos_tabdelimited_utf8(self):
-        with open(
-            "data/wos_tab_delimited_win_utf8.txt", encoding="utf-8-sig"
-        ) as fh:
+        with open("data/wos_tab_delimited_win_utf8.txt", encoding="utf-8-sig") as fh:
             r = TabDelimitedReader(fh)
             for record in r:
                 assert_no_bom(record)
@@ -206,4 +207,4 @@ class TestTabDelimitedReader:
 #        for pt in pt_reader:
 #            td = next(td_reader)
 #            for k, v in pt.iteritems():
-#                assert_equal(v, td[k])
+#                assert v == td[k]

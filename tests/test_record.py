@@ -1,8 +1,6 @@
 import tempfile
 from wosfile.record import Record, records_from, parse_address_field
 
-from nose.tools import assert_dict_equal, assert_equal, assert_is_instance
-
 
 class TestRecord:
     data = {
@@ -22,28 +20,25 @@ class TestRecord:
 
     def test_init(self):
         rec = Record(self.data, skip_empty=False)
-        assert_equal(rec.skip_empty, False)
+        assert rec.skip_empty is False
 
     def test_parse(self):
         rec = Record()
         rec.parse(self.data)
 
-        assert_equal(
-            dict(rec),
-            {
-                "PT": "J",
-                "AU": ["Doe, J", "Foo, B"],
-                "TI": "Title here",
-                "DE": ["desc1", "desc2", "desc3"],
-                "PY": "2016",
-                "J9": "J9",
-                "BS": "BS",
-                "SO": "SO",
-                "VL": "4",
-                "BP": "102",
-                "DI": "123",
-            },
-        )
+        assert dict(rec) == {
+            "PT": "J",
+            "AU": ["Doe, J", "Foo, B"],
+            "TI": "Title here",
+            "DE": ["desc1", "desc2", "desc3"],
+            "PY": "2016",
+            "J9": "J9",
+            "BS": "BS",
+            "SO": "SO",
+            "VL": "4",
+            "BP": "102",
+            "DI": "123",
+        }
 
         rec.skip_empty = False
         rec.parse(self.data)
@@ -51,7 +46,7 @@ class TestRecord:
 
     def test_record_id(self):
         rec = Record(self.data)
-        assert_equal(rec.record_id, "Doe J, 2016, J9, V4, P102, DOI 123")
+        assert rec.record_id == "Doe J, 2016, J9, V4, P102, DOI 123"
 
 
 def test_parse_address_field_simple():
@@ -59,7 +54,7 @@ def test_parse_address_field_simple():
     value = "Address A, Q; Address B, C; Address D, E"
     res = parse_address_field(value)
     expected = ["Address A, Q", "Address B, C", "Address D, E"]
-    assert_equal(res, expected)
+    assert res == expected
 
 
 def test_parse_address_field_complex():
@@ -72,7 +67,7 @@ def test_parse_address_field_complex():
         "C": ["address C 1", "address C 2", "address CD"],
         "D": ["address CD"],
     }
-    assert_dict_equal(res, expected)
+    assert res == expected
 
 
 def test_records_from():
@@ -87,8 +82,8 @@ PT J\nAU Mary\nER\nEF"""
     results = list(records_from(fname))
     expected = [{"PT": "J", "AU": "John"}, {"PT": "J", "AU": "Mary"}]
     for res, exp in zip(results, expected):
-        assert_is_instance(res, Record)
-        assert_equal(res, Record(exp))
+        assert isinstance(res, Record)
+        assert res == Record(exp)
 
 
 def test_records_from_multiple_files():
@@ -107,5 +102,5 @@ def test_records_from_multiple_files():
     results = list(records_from([fname for _, fname in files]))
     expected = [{"PT": "J", "AU": "John"}, {"PT": "J", "AU": "Mary"}]
     for res, exp in zip(results, expected):
-        assert_is_instance(res, Record)
-        assert_equal(res, Record(exp))
+        assert isinstance(res, Record)
+        assert res == Record(exp)

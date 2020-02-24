@@ -9,7 +9,7 @@ setup(
     url='http://github.com/rafguns/wosfile',
     license='New BSD License',
     author='Raf Guns',
-    tests_require=['nose'],
+    tests_require=['pytest'],
     author_email='raf.guns@uantwerpen.be',
     description='Handle Thomson Reuters Web of Science™ export files',
     long_description=long_description,
