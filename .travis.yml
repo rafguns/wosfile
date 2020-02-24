@@ -1,23 +1,22 @@
-dist: xenial  # Required for Python >= 3.7
+dist: xenial
 language: python
 cache: pip
 python:
-    - "3.6"
-    - "3.7"
-    - "3.8-dev"
+- '3.6'
+- '3.7'
+- 3.8-dev
 install:
-    - pip install --upgrade pip setuptools coverage coveralls nose
+- pip install --upgrade pip setuptools coverage coveralls nose
 script:
-    - printenv PWD
-    - pip install .
-    - nosetests --with-doctest --with-coverage --cover-package=wosfile
-after_success:
-    coveralls
+- printenv PWD
+- pip install .
+- nosetests --with-doctest --with-coverage --cover-package=wosfile
+after_success: coveralls
 deploy:
-    provider: pypi
-    user: rafguns
-    password:
-        secure: RCP8uJP9y4avKdRC1A5fkQFi00Ssgfn9gwhVpEoDVR0JkaZ+Ei9ZnseTPLbydeFxZmO1FwF7aR8ISdArjjvYxtYWmhjVLtTpkWQKvk/avT5rFNsR33eiZtzCOScJqXtrexF8IlRL4rYEKz2JA+kLnCVrfhTyx8jwdDZccC2bfH8=
-    skip_existing: true
-    on:
-        tags: true
+  provider: pypi
+  user: rafguns
+  password:
+    secure: lRd1I6/yePBUQ/usibqcaynnOe2gNcqL5pQmPRu2keA0AYKkz3C0nxYB4UzYS/M3r7jFu9y/dNDP8bZgGrNQwL0t8oUFFf6tCvrp+78FD2X1ttJQ5AgtT0K5xLMmFeeeoY0nZ537nYOLTTyEF7HoA1L/RBzeJ0trHZRVL8ZhRInp0w+kIqOJcO3zhHQL4ggoxXyIvkroJLb67Cxx1Wj27uPr+Cq/cxWi9BHcC12qcas6kUzZdSWWWkBR6byGuFoQ/AtkzZSWxnh0Jn61lFjgUWk/28uITKr4vHZXFqMYDTttlL3yxaKMvsQrpJUZ1NAM2mnSUyi7MUEXF6Z4Y6ybqKZB4nfYnH3quJEpEka7JNopHUXoqFXYl0+0QaWGg8zyBsLFkYKCgv9tbp50INMhBQEQG0R/p/83ti/Jg56oOnyPfjXeghMClHatIesZSFsKVlWYRa0dstCsrB/AUyO2TTPQo7Te8tsusNae+4K55mMZDnuXiep7nAeJpZT9Oa3n3EFPX/z1qO5yxuCGwa8yhQE+deP0XI88pUc1UW5e08+TfDuJiHyCz+Bv87pR0FW9vk8X5MICi5KCTXke1czXQQjDnBtpy3MSg6LF1kG1/s3aXBuknXrMvS0xoMPgFLS8QCBoK3Axilfv2y+WmbQY3i0Yso8AHV/R+KwBuq2UDpQ=
+  skip_existing: true
+  on:
+    tags: true
