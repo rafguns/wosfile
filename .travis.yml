@@ -6,11 +6,11 @@ python:
 - '3.7'
 - 3.8-dev
 install:
-- pip install --upgrade pip setuptools coverage coveralls nose
+- pip install --upgrade pip setuptools coverage coveralls pytest pytest-cov
 script:
 - printenv PWD
 - pip install .
-- nosetests --with-doctest --with-coverage --cover-package=wosfile
+- python -m pytest --cov=wosfile
 after_success: coveralls
 deploy:
   provider: pypi
