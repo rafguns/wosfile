@@ -1,7 +1,6 @@
 import os
 import pytest
 import sys
-import tempfile
 from io import StringIO
 
 from wosfile.read import (
@@ -34,19 +33,17 @@ def test_get_reader():
         get_reader(StringIO("XY Bla\nVR 1.0"))
 
 
-def test_read():
+def test_read(tmp_path):
     data = preamble_b + b"PT J\nAU John Doe\nER\nEF"
     expected = {"PT": "J", "AU": "John Doe"}
 
-    fd, fname = tempfile.mkstemp()
-    with open(fname, "wb") as f:
+    filename = tmp_path / "test_read"
+    with open(filename, "wb") as f:
         f.write(data)
-    for res in (list(read(fname)), list(read(fname, using=PlainTextReader))):
+    for res in (list(read(filename)), list(read(filename, using=PlainTextReader))):
         assert len(res) == 1
         assert res[0] == expected
         assert f.closed
-    os.close(fd)
-    os.unlink(fname)
 
 
 def test_read_actual_data():
@@ -59,7 +56,7 @@ def test_read_actual_data():
             assert_no_bom(rec)
 
 
-def test_read_multiple_files():
+def test_read_multiple_files(tmp_path):
     data = [
         preamble_b + b"PT J\nAU John Doe\nER\nEF",
         preamble_b + b"PT T\nAU Mary Stuart\nER\nEF",
@@ -67,18 +64,14 @@ def test_read_multiple_files():
     expected = [{"PT": "J", "AU": "John Doe"}, {"PT": "T", "AU": "Mary Stuart"}]
 
     files = []
-    for d in data:
-        fd, fname = tempfile.mkstemp()
+    for i, d in enumerate(data):
+        fname = tmp_path / f"test_read_multiple_files{i}"
         with open(fname, "wb") as f:
             f.write(d)
-        files.append((fd, fname))
+        files.append(fname)
 
-    for rec, exp in zip(read([fname for _, fname in files]), expected):
+    for rec, exp in zip(read(files), expected):
         assert rec == exp
-
-    for fd, fname in files:
-        os.close(fd)
-        os.unlink(fname)
 
 
 class TestPlainTextReader:

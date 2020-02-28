@@ -1,5 +1,6 @@
 import codecs
 import logging
+import pathlib
 import sys
 from csv import DictReader
 from typing import (
@@ -21,6 +22,8 @@ from .tags import has_item_per_line
 logger = logging.getLogger(__name__)
 
 __all__ = ["get_reader", "read", "PlainTextReader", "ReadError", "TabDelimitedReader"]
+
+FileName = Union[str, pathlib.Path]
 
 
 class ReadError(Exception):
@@ -81,7 +84,7 @@ def get_reader(fh: TextIO) -> Type[Reader]:
 
 
 def read(
-    fname: Union[str, Iterable[str]],
+    fname: Union[FileName, Iterable[FileName]],
     using: Optional[Type[Reader]] = None,
     encoding: str = None,
     **kwargs
@@ -101,7 +104,7 @@ def read(
         value dict
 
     """
-    if not isinstance(fname, str):
+    if not isinstance(fname, (str, pathlib.Path)):
         # fname is an iterable of file names
         for actual_fname in fname:
             for record in read(actual_fname):
