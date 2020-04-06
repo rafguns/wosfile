@@ -1,5 +1,8 @@
 import tempfile
-from wosfile.record import Record, records_from, parse_address_field
+
+import pytest
+
+from wosfile.record import Record, parse_address_field, records_from
 
 
 class TestRecord:
@@ -16,6 +19,7 @@ class TestRecord:
         "BP": "102",
         "DI": "123",
         "AB": "",
+        "C1": "Univ Michigan; Stanford Univ",
     }
 
     def test_init(self):
@@ -29,6 +33,7 @@ class TestRecord:
         assert dict(rec) == {
             "PT": "J",
             "AU": ["Doe, J", "Foo, B"],
+            "C1": ["Univ Michigan", "Stanford Univ"],
             "TI": "Title here",
             "DE": ["desc1", "desc2", "desc3"],
             "PY": "2016",
@@ -68,6 +73,12 @@ def test_parse_address_field_complex():
         "D": ["address CD"],
     }
     assert res == expected
+
+
+def test_parse_invalid_address_field():
+    value = "[a; b x"
+    with pytest.raises(ValueError):
+        parse_address_field(value)
 
 
 def test_records_from():
