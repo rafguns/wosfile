@@ -4,7 +4,7 @@ cache: pip
 python:
 - '3.6'
 - '3.7'
-- 3.8-dev
+- '3.8'
 install:
 - pip install --upgrade pip setuptools coverage coveralls pytest pytest-cov
 script:
