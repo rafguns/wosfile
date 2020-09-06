@@ -107,8 +107,7 @@ def read(
     if not isinstance(fname, (str, pathlib.Path)):
         # fname is an iterable of file names
         for actual_fname in fname:
-            for record in read(actual_fname):
-                yield record
+            yield from read(actual_fname)
 
     else:
         if encoding is None:
@@ -122,9 +121,7 @@ def read(
             reader_class = using
 
         with open(fname, encoding=encoding) as fh:
-            reader = reader_class(fh, **kwargs)
-            for record in reader:
-                yield record
+            yield from reader_class(fh, **kwargs)
 
 
 class TabDelimitedReader(Reader):
