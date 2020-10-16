@@ -70,6 +70,14 @@ def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
     # Only addresses, no authors
     if not field.startswith("["):
         addresses = field.split("; ")
+
+        # It may happen that the first address(es) dont have authors but the rest do:
+        # Remove the ones without authors in that case and reparse what remains.
+        # See issue #8.
+        if any(address.startswith("[") for address in addresses):
+            m = re.search(r".+?;\s*(\[.+$)", field)
+            trimmed_field = m.group(1)  # type: ignore
+            return parse_address_field(trimmed_field)
         return addresses
 
     # Addresses with authors

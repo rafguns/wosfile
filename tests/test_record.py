@@ -84,6 +84,25 @@ addresses = [
         None,
     ),
     ("[a; b x", None, ValueError),
+    # Mixture of with and without authors (issue #8), slightly simplified from WOS:000381400500004
+    (
+        (
+            "Univ Leuven, Dept Earth & Environm Sci, Leuven, Belgium; "
+            "Univ Leuven, Dept Earth & Environm Sci, Leuven, Belgium; "
+            "[Bi, Lingling; Vanneste, Dominique] Univ Leuven, Dept Earth & Environm Sci, Leuven, Belgium; "
+            "[Bi, Lingling] Xian Int Studies Univ, Sch Tourism, Xian, Peoples R China"
+        ),
+        {
+            "Bi, Lingling": [
+                "Univ Leuven, Dept Earth & Environm Sci, Leuven, Belgium",
+                "Xian Int Studies Univ, Sch Tourism, Xian, Peoples R China",
+            ],
+            "Vanneste, Dominique": [
+                "Univ Leuven, Dept Earth & Environm Sci, Leuven, Belgium"
+            ],
+        },
+        None,
+    ),
 ]
 
 
