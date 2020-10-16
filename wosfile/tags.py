@@ -1,11 +1,9 @@
-from __future__ import unicode_literals
-
 # http://images.webofknowledge.com/WOKRS534DR1/help/WOS/hs_wos_fieldtags.html
 # Format: (Abbreviation, Full label, Iterable?, One item per line?)
 # - Abbreviation: WoS field tag
 # - Full label: full label as provided by Thomson Reuters (or abbreviation if
 #   not available)
-# - Iterable: whether or not the field may consist of multiple items
+# - Splittable: whether or not the field should be split into multiple items
 # - One item per line: whether or not each item in an iterable field appears on
 #   a new line in WoS plain text format
 tags = (
@@ -19,7 +17,7 @@ tags = (
     ("BN", "International Standard Book Number (ISBN)", False, False),
     ("BP", "Beginning Page", False, False),
     ("BS", "Book Series Subtitle", False, False),
-    ("C1", "Author Address", True, True),
+    ("C1", "Author Address", False, True),  # Splitting of this field is handled separately
     ("CA", "Group Authors", False, False),
     ("CL", "Conference Location", False, False),
     ("CR", "Cited References", True, True),
@@ -81,9 +79,5 @@ tags = (
     ("WC", "Web of Science Categories", True, False),
     ("Z9", "Total Times Cited Count (WoS Core, BCI, and CSCD)", False, False),
 )
-is_iterable = {abbr: iterable for abbr, _, iterable, _ in tags}
+is_splittable = {abbr: iterable for abbr, _, iterable, _ in tags}
 has_item_per_line = {abbr: item_per_line for abbr, _, _, item_per_line in tags}
-
-# C1 is treated specially.
-is_address_field = dict.fromkeys([t[0] for t in tags], False)
-is_address_field["C1"] = True

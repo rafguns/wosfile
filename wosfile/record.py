@@ -1,9 +1,9 @@
 import re
 from collections import defaultdict
-from typing import Dict, Iterable, Iterator, List, Union
+from typing import Dict, Iterable, Iterator, List, Optional, Union
 
 from .read import read
-from .tags import is_address_field, is_iterable
+from .tags import is_splittable
 
 __all__ = ["Record", "parse_address_field", "records_from"]
 
@@ -36,9 +36,7 @@ class Record(dict):
         for field_name, value in wos_data.items():
             if self.skip_empty and not value:
                 continue
-            if is_address_field[field_name]:
-                self[field_name] = parse_address_field(value)
-            elif is_iterable[field_name]:
+            if is_splittable[field_name]:
                 self[field_name] = split_by(value, ";")
             else:  # No parsing needed
                 self[field_name] = value
@@ -58,6 +56,13 @@ class Record(dict):
         return ", ".join(
             item for item in (first_author, year, journal, volume, page, doi) if item
         )
+
+    @property
+    def author_address(self) -> Optional[Union[List[str], Dict[str, List[str]]]]:
+        try:
+            return parse_address_field(self['C1'])
+        except KeyError:
+            return None
 
 
 def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:

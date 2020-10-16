@@ -33,7 +33,7 @@ class TestRecord:
         assert dict(rec) == {
             "PT": "J",
             "AU": ["Doe, J", "Foo, B"],
-            "C1": ["Univ Michigan", "Stanford Univ"],
+            "C1": "Univ Michigan; Stanford Univ",
             "TI": "Title here",
             "DE": ["desc1", "desc2", "desc3"],
             "PY": "2016",
@@ -52,6 +52,10 @@ class TestRecord:
     def test_record_id(self):
         rec = Record(self.data)
         assert rec.record_id == "Doe J, 2016, J9, V4, P102, DOI 123"
+
+    def test_record_author_address(self):
+        rec = Record(self.data)
+        assert rec.author_address == ["Univ Michigan", "Stanford Univ"]
 
 
 def test_parse_address_field_simple():
