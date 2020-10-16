@@ -5,37 +5,14 @@ import pytest
 from wosfile.record import Record, parse_address_field, records_from
 
 
-class TestRecord:
-    data = {
-        "PT": "J",
-        "AU": "Doe, J;  Foo, B",
-        "TI": "Title here",
-        "DE": "desc1; desc2; desc3",
-        "PY": "2016",
-        "J9": "J9",
-        "BS": "BS",
-        "SO": "SO",
-        "VL": "4",
-        "BP": "102",
-        "DI": "123",
-        "AB": "",
-        "C1": "Univ Michigan; Stanford Univ",
-    }
-
-    def test_init(self):
-        rec = Record(self.data, skip_empty=False)
-        assert rec.skip_empty is False
-
-    def test_parse(self):
-        rec = Record()
-        rec.parse(self.data)
-
-        assert dict(rec) == {
+records = [
+    # (data, record_id, author_address)
+    (
+        {
             "PT": "J",
-            "AU": ["Doe, J", "Foo, B"],
-            "C1": "Univ Michigan; Stanford Univ",
+            "AU": "Doe, J;  Foo, B",
             "TI": "Title here",
-            "DE": ["desc1", "desc2", "desc3"],
+            "DE": "desc1; desc2; desc3",
             "PY": "2016",
             "J9": "J9",
             "BS": "BS",
@@ -43,46 +20,82 @@ class TestRecord:
             "VL": "4",
             "BP": "102",
             "DI": "123",
-        }
-
-        rec.skip_empty = False
-        rec.parse(self.data)
-        assert "AB" in rec
-
-    def test_record_id(self):
-        rec = Record(self.data)
-        assert rec.record_id == "Doe J, 2016, J9, V4, P102, DOI 123"
-
-    def test_record_author_address(self):
-        rec = Record(self.data)
-        assert rec.author_address == ["Univ Michigan", "Stanford Univ"]
+            "AB": "",
+            "C1": "Univ Michigan; Stanford Univ",
+        },
+        "Doe J, 2016, J9, V4, P102, DOI 123",
+        ["Univ Michigan", "Stanford Univ"],
+    ),
+]
 
 
-def test_parse_address_field_simple():
-    """Correctly split C1 (address) records like foo; bar; baz"""
-    value = "Address A, Q; Address B, C; Address D, E"
-    res = parse_address_field(value)
-    expected = ["Address A, Q", "Address B, C", "Address D, E"]
-    assert res == expected
+@pytest.mark.parametrize("data, record_id, author_address", records)
+def test_record_init(data, record_id, author_address):
+    rec = Record(data, skip_empty=False)
+    assert rec.skip_empty is False
 
 
-def test_parse_address_field_complex():
-    """Correctly split C1 (address) records like [A; B] foo; [C; D] bar"""
-    value = "[A; B] address AB; [C] address C 1; [C] address C 2; " "[C; D] address CD"
-    res = parse_address_field(value)
-    expected = {
-        "A": ["address AB"],
-        "B": ["address AB"],
-        "C": ["address C 1", "address C 2", "address CD"],
-        "D": ["address CD"],
-    }
-    assert res == expected
+@pytest.mark.parametrize("data, record_id, author_address", records)
+def test_record_parse(data, record_id, author_address):
+    rec = Record()
+    rec.parse(data)
+    assert rec["PT"] == data["PT"]
+    assert type(rec["AU"]) == list
 
 
-def test_parse_invalid_address_field():
-    value = "[a; b x"
-    with pytest.raises(ValueError):
-        parse_address_field(value)
+@pytest.mark.parametrize("data, record_id, author_address", records)
+def test_record_skip_empty(data, record_id, author_address):
+    rec = Record()
+    rec.parse(data)
+    assert "AB" not in rec
+
+    rec.skip_empty = False
+    rec.parse(data)
+    assert "AB" in rec
+
+
+@pytest.mark.parametrize("data, record_id, author_address", records)
+def test_record_id(data, record_id, author_address):
+    rec = Record(data)
+    assert rec.record_id == record_id
+
+
+@pytest.mark.parametrize("data, record_id, author_address", records)
+def test_record_author_address(data, record_id, author_address):
+    rec = Record(data)
+    assert rec.author_address == author_address
+
+
+addresses = [
+    # (input, expected, exception)
+    (
+        "Address A, Q; Address B, C; Address D, E",
+        ["Address A, Q", "Address B, C", "Address D, E"],
+        None,
+    ),
+    (
+        "[A; B] address AB; [C] address C 1; [C] address C 2; " "[C; D] address CD",
+        {
+            "A": ["address AB"],
+            "B": ["address AB"],
+            "C": ["address C 1", "address C 2", "address CD"],
+            "D": ["address CD"],
+        },
+        None,
+    ),
+    ("[a; b x", None, ValueError),
+]
+
+
+@pytest.mark.parametrize("input, expected, exception", addresses)
+def test_parse_address_field(input, expected, exception):
+    """Correctly parse C1 (address) fields"""
+    if exception is not None:
+        with pytest.raises(exception):
+            parse_address_field(input)
+    else:
+        res = parse_address_field(input)
+        assert res == expected
 
 
 def test_records_from():
