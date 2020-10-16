@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/rafguns/wosfile.svg?branch=master)](https://travis-ci.org/rafguns/wosfile)
 [![Coverage Status](https://coveralls.io/repos/rafguns/wosfile/badge.svg?branch=master&service=github)](https://coveralls.io/github/rafguns/wosfile?branch=master)
 
-**wosfile** is a Python package designed to read and handle data exported from Thomson Reuters Web of Science™. It supports both tab-delimited files and so-called ‘plain text’ files.
+**wosfile** is a Python package designed to read and handle data exported from Clarivate Analytics [Web of Science™](https://www.webofknowledge.com). It supports both tab-delimited files and so-called ‘plain text’ files.
 
 The point of wosfile is to read export files from WoS and give you a simple data structure—essentially a dict—that can be further analyzed with tools available in standard Python or with third-party packages. If you're looking for a ‘one-size-fits-all’ solution, this is probably not it.
 
