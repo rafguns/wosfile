@@ -1,6 +1,6 @@
 from setuptools import setup
 
-long_description = open("README.md").read()
+long_description = open("README.md", encoding="utf-8").read()
 
 setup(
     name="wosfile",
@@ -10,7 +10,7 @@ setup(
     author="Raf Guns",
     tests_require=["pytest", "pytest-cov"],
     author_email="raf.guns@uantwerpen.be",
-    description="Handle Thomson Reuters Web of Science™ export files",
+    description="Handle Web of Science export files",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=["wosfile"],
