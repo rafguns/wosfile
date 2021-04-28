@@ -4,7 +4,7 @@ long_description = open("README.md", encoding="utf-8").read()
 
 setup(
     name="wosfile",
-    version="0.4.2",
+    version="0.5",
     url="http://github.com/rafguns/wosfile",
     license="New BSD License",
     author="Raf Guns",
