@@ -77,6 +77,7 @@ tags = (
     ("UT", "Unique Article Identifier", False, False),
     ("VL", "Volume", False, False),
     ("WC", "Web of Science Categories", True, False),
+    ("WE", "???", False, False),
     ("Z9", "Total Times Cited Count (WoS Core, BCI, and CSCD)", False, False),
 )
 is_splittable = {abbr: iterable for abbr, _, iterable, _ in tags}
