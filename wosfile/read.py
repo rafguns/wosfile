@@ -222,8 +222,7 @@ class PlainTextReader(Reader):
                 "Please report this error:\n" \
                 "  https://github.com/rafguns/wosfile/issues\n" \
                 "We are sorry for the inconvenience.\n"
-            print(msg.format(heading))
-        raise NotImplementedError
+            raise NotImplementedError(msg.format(heading))
 
     def __next__(self) -> Dict[str, str]:
         record = {}
