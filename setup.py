@@ -4,7 +4,7 @@ long_description = open("README.md", encoding="utf-8").read()
 
 setup(
     name="wosfile",
-    version="0.5",
+    version="0.6",
     url="http://github.com/rafguns/wosfile",
     license="New BSD License",
     author="Raf Guns",
@@ -22,6 +22,8 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Software Development",
         "Topic :: Scientific/Engineering",
         "Development Status :: 3 - Alpha",
