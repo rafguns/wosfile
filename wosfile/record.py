@@ -44,8 +44,6 @@ class Record(dict):
     @property
     def record_id(self) -> str:
         """Get WoS record ID for current data"""
-        import re
-
         first_author = re.sub(r"(.*), (.*)", r"\1 \2", self["AU"][0])
         year = self.get("PY")
         journal = self.get("J9", self.get("BS", self.get("SO")))
