@@ -1,7 +1,6 @@
 import codecs
 import logging
 import pathlib
-import sys
 from csv import DictReader
 from typing import (
     AnyStr,
@@ -217,11 +216,13 @@ class PlainTextReader(Reader):
             else:
                 return " ".join(values)
         except KeyError:
-            msg = "\n------------ ERROR ------------\n" \
-                "Seems that the tag \"{}\" is new and not yet handled by the wosfile library.\n" \
-                "Please report this error:\n" \
-                "  https://github.com/rafguns/wosfile/issues\n" \
+            msg = (
+                "\n------------ ERROR ------------\n"
+                'Seems that the tag "{}" is new and not yet handled by the wosfile library.\n'
+                "Please report this error:\n"
+                "  https://github.com/rafguns/wosfile/issues\n"
                 "We are sorry for the inconvenience.\n"
+            )
             raise NotImplementedError(msg.format(heading))
 
     def __next__(self) -> Dict[str, str]:

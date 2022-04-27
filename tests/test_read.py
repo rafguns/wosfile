@@ -1,6 +1,4 @@
-import os
 import pytest
-import sys
 from io import StringIO
 
 from wosfile.read import (
@@ -95,6 +93,12 @@ class TestPlainTextReader:
         f = StringIO(preamble_s + "PT abc\nAU xuz\nER\n\nPT abc2\nER")
         r = PlainTextReader(f)
         with pytest.raises(ReadError):
+            list(r)
+
+    def test_unknown_tag(self):
+        f = StringIO(preamble_s + "PT abc\n\nQQ x\nER\nEF")
+        r = PlainTextReader(f)
+        with pytest.raises(NotImplementedError):
             list(r)
 
     def test_ignore_empty_lines(self):

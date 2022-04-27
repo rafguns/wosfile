@@ -22,6 +22,7 @@ class Record(dict):
         :param bool skip_empty: whether or not to skip empty fields
 
         """
+        super().__init__(self)
         self.skip_empty = skip_empty
         if wos_data:
             self.parse(wos_data)

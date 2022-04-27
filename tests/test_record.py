@@ -66,6 +66,11 @@ def test_record_author_address(data, record_id, author_address):
     assert rec.author_address == author_address
 
 
+def test_record_author_address_missing():
+    rec = Record({})
+    assert rec.author_address is None
+
+
 addresses = [
     # (input, expected, exception)
     (
