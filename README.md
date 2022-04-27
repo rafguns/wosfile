@@ -1,7 +1,7 @@
 # wosfile
 
-[![Build Status](https://travis-ci.org/rafguns/wosfile.svg?branch=master)](https://travis-ci.org/rafguns/wosfile)
-[![Coverage Status](https://coveralls.io/repos/rafguns/wosfile/badge.svg?branch=master&service=github)](https://coveralls.io/github/rafguns/wosfile?branch=master)
+![CI](https://github.com/rafguns/wosfile/actions/workflows/tox.yml/badge.svg)
+[![codecov](https://codecov.io/gh/rafguns/wosfile/branch/master/graph/badge.svg?token=3YXVZTHEY4)](https://codecov.io/gh/rafguns/wosfile)
 
 **wosfile** is a Python package designed to read and handle data exported from Clarivate Analytics [Web of Science™](https://www.webofknowledge.com). It supports both tab-delimited files and so-called ‘plain text’ files.
 
@@ -18,7 +18,7 @@ Cons:
 
 ## Examples
 
-These examples use a dataset exported from Web of Science in multiple separate files(the maximum number of exported records per file is 500).
+These examples use a dataset exported from Web of Science in multiple separate files. The maximum number of exported records per file is 1000 (or 5000, depending on how much metadata you need).
 
 ### Subject categories in our data
 
