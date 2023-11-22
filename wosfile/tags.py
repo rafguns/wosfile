@@ -18,6 +18,7 @@ tags = (
     ("BP", "Beginning Page", False, False),
     ("BS", "Book Series Subtitle", False, False),
     ("C1", "Author Address", False, True),  # Splitting of this field is handled separately
+    ("C3", "Author affiliations", True, False),
     ("CA", "Group Authors", False, False),
     ("CL", "Conference Location", False, False),
     ("CR", "Cited References", True, True),
