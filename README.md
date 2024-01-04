@@ -78,7 +78,8 @@ nx.write_pajek(G, 'network.net')
 The following packages also read WoS files (+ sometimes much more):
 * [WOS+](https://pypi.org/project/WOSplus/)
 * [metaknowledge](https://pypi.org/project/metaknowledge/)
-* [wostools](https://pypi.org/project/wostools/)
+* [python-bibx](https://pypi.org/project/bibx/)
+* [wostools](https://pypi.org/project/wostools/) (replaced by python-bibx)
 
 Other packages query WoS directly through the API and/or by scraping the web interface:
 * [pywos](https://pypi.org/project/pywos/) (elsewhere called [wos-statistics](https://github.com/refraction-ray/wos-statistics))
