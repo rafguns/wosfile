@@ -180,7 +180,7 @@ tags = (
     ("Z6", "Author Address (non-English)", False, False),  # unchecked
     ("Z7", "E-mail Address (non-English)", False, False),  # unchecked
     ("Z8", "CSCD Times Cited Count", False, False),  # unchecked
-    ("Z9", "Times Cited, All Databases", False, False, 0),
+    ("Z9", "Times Cited, All Databases", False, False),
     ("ZK", "Author Keywords (Korean)", False, False),  # unchecked
 )
 is_splittable = {abbr: iterable for abbr, _, iterable, _ in tags}
