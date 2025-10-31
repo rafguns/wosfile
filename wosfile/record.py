@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import Dict, Iterable, Iterator, List, Optional, Union
+from collections.abc import Iterable, Iterator
 
 from .read import read
 from .tags import is_splittable
@@ -8,13 +8,13 @@ from .tags import is_splittable
 __all__ = ["Record", "parse_address_field", "records_from"]
 
 
-def split_by(string: str, delimiter: str) -> List[str]:
+def split_by(string: str, delimiter: str) -> list[str]:
     return [part.strip() for part in string.split(delimiter)]
 
 
 class Record(dict):
     def __init__(
-        self, wos_data: Dict[str, str] = None, skip_empty: bool = True
+        self, wos_data: dict[str, str] | None = None, *, skip_empty: bool = True
     ) -> None:
         """Create a record based on *wos_data*
 
@@ -27,7 +27,7 @@ class Record(dict):
         if wos_data:
             self.parse(wos_data)
 
-    def parse(self, wos_data: Dict[str, str]) -> None:
+    def parse(self, wos_data: dict[str, str]) -> None:
         """Parse *wos_data* into more structured format
 
         :param dict wos_data: a WoS record
@@ -57,14 +57,14 @@ class Record(dict):
         )
 
     @property
-    def author_address(self) -> Optional[Union[List[str], Dict[str, List[str]]]]:
+    def author_address(self) -> list[str] | dict[str, list[str]] | None:
         try:
-            return parse_address_field(self['C1'])
+            return parse_address_field(self["C1"])
         except KeyError:
             return None
 
 
-def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
+def parse_address_field(field: str) -> list[str] | dict[str, list[str]]:
     """Parse author address field into author -> addresses dict"""
     # Only addresses, no authors
     if not field.startswith("["):
@@ -75,8 +75,9 @@ def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
         # See issue #8.
         if any(address.startswith("[") for address in addresses):
             m = re.search(r".+?;\s*(\[.+$)", field)
-            trimmed_field = m.group(1)  # type: ignore
-            return parse_address_field(trimmed_field)
+            if m is not None:
+                trimmed_field = m.group(1)
+                return parse_address_field(trimmed_field)
         return addresses
 
     # Addresses with authors
@@ -86,7 +87,7 @@ def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
         """,
         re.VERBOSE,
     )
-    parsed: Dict[str, List[str]] = defaultdict(list)
+    parsed: dict[str, list[str]] = defaultdict(list)
 
     address_fields = re.split(r";(?=\s*\[)", field)
     for address_field in address_fields:
@@ -94,7 +95,8 @@ def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
         if match:
             authors, address = match.groups()
         else:
-            raise ValueError(f"Could not parse '{address_field}' as address field")
+            msg = f"Could not parse '{address_field}' as address field"
+            raise ValueError(msg)
 
         for author in split_by(authors, ";"):
             parsed[author].append(address)
@@ -103,7 +105,7 @@ def parse_address_field(field: str) -> Union[List[str], Dict[str, List[str]]]:
 
 
 def records_from(
-    fname: Union[str, Iterable[str]], skip_empty: bool = True, **kwargs
+    fname: str | Iterable[str], *, skip_empty: bool = True, **kwargs
 ) -> Iterator[Record]:
     """Get records from WoS file *fobj*
 
@@ -116,4 +118,4 @@ def records_from(
 
     """
     for wos_record in read(fname, **kwargs):
-        yield Record(wos_record, skip_empty)
+        yield Record(wos_record, skip_empty=skip_empty)
