@@ -68,7 +68,7 @@ def test_read_multiple_files(tmp_path):
             f.write(d)
         files.append(fname)
 
-    for rec, exp in zip(read(files), expected):
+    for rec, exp in zip(read(files), expected, strict=False):
         assert rec == exp
 
 
@@ -122,7 +122,7 @@ class TestPlainTextReader:
         ]
 
         assert len(results) == len(expected)
-        for result, exp in zip(results, expected):
+        for result, exp in zip(results, expected, strict=False):
             assert result == exp
 
     def test_multiline_fields_split(self):
@@ -171,7 +171,7 @@ class TestTabDelimitedReader:
         ]
 
         assert len(results) == len(expected)
-        for result, exp in zip(results, expected):
+        for result, exp in zip(results, expected, strict=False):
             assert result == exp
 
     def test_spurious_tab_at_end(self):

@@ -103,7 +103,7 @@ def read(
         value dict
 
     """
-    if not isinstance(fname, (str, pathlib.Path)):
+    if not isinstance(fname, str | pathlib.Path):
         # fname is an iterable of file names
         for actual_fname in fname:
             yield from read(actual_fname)

@@ -1,6 +1,5 @@
 # wosfile
 
-![CI](https://github.com/rafguns/wosfile/actions/workflows/tox.yml/badge.svg)
 [![codecov](https://codecov.io/gh/rafguns/wosfile/branch/master/graph/badge.svg?token=3YXVZTHEY4)](https://codecov.io/gh/rafguns/wosfile)
 
 **wosfile** is a Python package designed to read and handle data exported from Clarivate Analytics [Web of Science™](https://www.webofknowledge.com). It supports both tab-delimited files and so-called ‘plain text’ files.
