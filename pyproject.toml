@@ -22,6 +22,7 @@ classifiers = [
         "Operating System :: OS Independent",
 ]
 license = "MIT"
+packages = ["wosfile"]
 
 [project.optional-dependencies]
 dev = ["pytest >=7.1", "pytest-cov", "tox>=4.4"]
