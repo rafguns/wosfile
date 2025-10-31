@@ -1,0 +1,63 @@
+[project]
+name = "wosfile"
+version = "0.7.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+authors = [{name = "Raf Guns", email = "raf.guns@uantwerpen.be"}]
+classifiers = [
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
+        "Topic :: Software Development",
+        "Topic :: Scientific/Engineering",
+        "Development Status :: 4 - Beta",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+]
+license = "New BSD License"
+
+[project.optional-dependencies]
+dev = ["pytest >=7.1", "pytest-cov", "tox>=4.4"]
+
+[project.urls]
+Home = "https://github.com/rafguns/wosfile/"
+
+[tool.ruff]
+target-version = "py39"
+# See https://beta.ruff.rs/docs/rules/
+select = [
+    "A", # builtin shadowing
+    "ARG", # unsued arguments
+    "B", # bugbear
+    "C4", # comprehensions
+    "C90", # mccabe complexity
+    "E", # style errors
+    "EM", # error messages
+    "F", # flakes
+    "FBT", # boolean trap
+    "G", # logging format
+    "I", # import sorting
+    "ISC", # string concatenation
+    "N", # naming
+    "PGH", # pygrep-hooks
+    "PIE", # miscellaneous
+    "PL", # pylint
+    "PT", # pytest style
+    "Q", # quotes
+    "RET", # return
+    "RSE", # raise
+    "RUF", # Ruff
+    "SIM", # simplify
+    "T20", # print
+    "UP", # upgrade
+    "W", # style warnings
+    "YTT", # sys.version
+]
