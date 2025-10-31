@@ -34,7 +34,7 @@ dev = ["pytest >=7.1", "pytest-cov", "tox>=4.4"]
 Home = "https://github.com/rafguns/wosfile/"
 
 [tool.flit.module]
-name = "linkpred"
+name = "wosfile"
 
 [tool.ruff]
 target-version = "py39"
