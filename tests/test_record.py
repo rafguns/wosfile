@@ -132,7 +132,7 @@ PT J\nAU Mary\nER\nEF"""
 
     results = list(records_from(fname))
     expected = [{"PT": "J", "AU": "John"}, {"PT": "J", "AU": "Mary"}]
-    for res, exp in zip(results, expected):
+    for res, exp in zip(results, expected, strict=False):
         assert isinstance(res, Record)
         assert res == Record(exp)
 
@@ -152,6 +152,6 @@ def test_records_from_multiple_files():
 
     results = list(records_from([fname for _, fname in files]))
     expected = [{"PT": "J", "AU": "John"}, {"PT": "J", "AU": "Mary"}]
-    for res, exp in zip(results, expected):
+    for res, exp in zip(results, expected, strict=False):
         assert isinstance(res, Record)
         assert res == Record(exp)
