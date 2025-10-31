@@ -362,7 +362,7 @@ wheels = [
 [[package]]
 name = "wosfile"
 version = "0.7.0"
-source = { virtual = "." }
+source = { editable = "." }
 
 [package.optional-dependencies]
 dev = [

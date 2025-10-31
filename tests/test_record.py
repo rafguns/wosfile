@@ -4,7 +4,6 @@ import pytest
 
 from wosfile.record import Record, parse_address_field, records_from
 
-
 records = [
     # (data, record_id, author_address)
     (
@@ -29,22 +28,22 @@ records = [
 ]
 
 
-@pytest.mark.parametrize("data, record_id, author_address", records)
-def test_record_init(data, record_id, author_address):
+@pytest.mark.parametrize("data", [r[0] for r in records])
+def test_record_init(data):
     rec = Record(data, skip_empty=False)
     assert rec.skip_empty is False
 
 
-@pytest.mark.parametrize("data, record_id, author_address", records)
-def test_record_parse(data, record_id, author_address):
+@pytest.mark.parametrize("data", [r[0] for r in records])
+def test_record_parse(data):
     rec = Record()
     rec.parse(data)
     assert rec["PT"] == data["PT"]
-    assert type(rec["AU"]) == list
+    assert isinstance(rec["AU"], list)
 
 
-@pytest.mark.parametrize("data, record_id, author_address", records)
-def test_record_skip_empty(data, record_id, author_address):
+@pytest.mark.parametrize("data", [r[0] for r in records])
+def test_record_skip_empty(data):
     rec = Record()
     rec.parse(data)
     assert "AB" not in rec
@@ -54,14 +53,14 @@ def test_record_skip_empty(data, record_id, author_address):
     assert "AB" in rec
 
 
-@pytest.mark.parametrize("data, record_id, author_address", records)
-def test_record_id(data, record_id, author_address):
+@pytest.mark.parametrize(("data", "record_id"), [(r[0], r[1]) for r in records])
+def test_record_id(data, record_id):
     rec = Record(data)
     assert rec.record_id == record_id
 
 
-@pytest.mark.parametrize("data, record_id, author_address", records)
-def test_record_author_address(data, record_id, author_address):
+@pytest.mark.parametrize(("data", "author_address"), [(r[0], r[2]) for r in records])
+def test_record_author_address(data, author_address):
     rec = Record(data)
     assert rec.author_address == author_address
 
@@ -79,7 +78,7 @@ addresses = [
         None,
     ),
     (
-        "[A; B] address AB; [C] address C 1; [C] address C 2; " "[C; D] address CD",
+        "[A; B] address AB; [C] address C 1; [C] address C 2; [C; D] address CD",
         {
             "A": ["address AB"],
             "B": ["address AB"],
@@ -89,7 +88,7 @@ addresses = [
         None,
     ),
     ("[a; b x", None, ValueError),
-    # Mixture of with and without authors (issue #8), slightly simplified from WOS:000381400500004
+    # Mixture of with/without authors (issue #8), simplified from WOS:000381400500004
     (
         (
             "Univ Leuven, Dept Earth & Environm Sci, Leuven, Belgium; "
@@ -111,7 +110,7 @@ addresses = [
 ]
 
 
-@pytest.mark.parametrize("input, expected, exception", addresses)
+@pytest.mark.parametrize(("input", "expected", "exception"), addresses)
 def test_parse_address_field(input, expected, exception):
     """Correctly parse C1 (address) fields"""
     if exception is not None:
@@ -140,8 +139,8 @@ PT J\nAU Mary\nER\nEF"""
 
 def test_records_from_multiple_files():
     data = [
-        b"FN Thomson Reuters Web of Science\nVR 1.0\n" b"PT J\nAU John\nER\nEF",
-        b"FN Thomson Reuters Web of Science\nVR 1.0\n" b"PT J\nAU Mary\nER\nEF",
+        b"FN Thomson Reuters Web of Science\nVR 1.0\nPT J\nAU John\nER\nEF",
+        b"FN Thomson Reuters Web of Science\nVR 1.0\nPT J\nAU Mary\nER\nEF",
     ]
 
     files = []

@@ -1,5 +1,6 @@
-import pytest
 from io import StringIO
+
+import pytest
 
 from wosfile.read import (
     PlainTextReader,
@@ -17,7 +18,7 @@ preamble_s = preamble_b.decode("utf-8")
 
 def assert_no_bom(record):
     # very basic way of asserting that we've successfully stripped the BOM
-    assert u"PT" in record
+    assert "PT" in record
 
 
 def test_get_reader():
@@ -83,13 +84,13 @@ class TestPlainTextReader:
         with pytest.raises(ReadError):
             PlainTextReader(f)
 
-    def test_forgotten_ER(self):
+    def test_forgotten_ER(self):  # noqa: N802
         f = StringIO(preamble_s + "PT abc\nAU xuz\nER\n\nPT abc2\nEF")
         r = PlainTextReader(f)
         with pytest.raises(ReadError):
             list(r)
 
-    def test_forgotten_EF(self):
+    def test_forgotten_EF(self):  # noqa: N802
         f = StringIO(preamble_s + "PT abc\nAU xuz\nER\n\nPT abc2\nER")
         r = PlainTextReader(f)
         with pytest.raises(ReadError):
@@ -127,7 +128,7 @@ class TestPlainTextReader:
 
     def test_multiline_fields_split(self):
         f = StringIO(
-            preamble_s + "PT abc\nSO J.Whatever\nAF Here\n   be\n" "   dragons\nER\nEF"
+            preamble_s + "PT abc\nSO J.Whatever\nAF Here\n   be\n   dragons\nER\nEF"
         )
 
         r = PlainTextReader(f)
@@ -136,7 +137,7 @@ class TestPlainTextReader:
 
     def test_multiline_fields_nosplit(self):
         f = StringIO(
-            preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes" "\nER\nEF"
+            preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes\nER\nEF"
         )
 
         r = PlainTextReader(f)
@@ -164,7 +165,7 @@ class TestTabDelimitedReader:
         f = StringIO("PT\tAF\tC1\nJ\tAa; Bb\tX; Y\nJ\tBb; Cc\tY; Z")
         r = TabDelimitedReader(f)
 
-        results = [result for result in r]
+        results = list(r)
         expected = [
             {"PT": "J", "AF": "Aa; Bb", "C1": "X; Y"},
             {"PT": "J", "AF": "Bb; Cc", "C1": "Y; Z"},

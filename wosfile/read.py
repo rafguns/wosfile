@@ -1,28 +1,23 @@
 import codecs
+import contextlib
 import logging
 import pathlib
+from collections.abc import Iterable, Iterator
 from csv import DictReader
 from typing import (
+    IO,
     AnyStr,
     BinaryIO,
-    Dict,
-    IO,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
     TextIO,
-    Type,
-    Union,
 )
 
 from .tags import has_item_per_line
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["get_reader", "read", "PlainTextReader", "ReadError", "TabDelimitedReader"]
+__all__ = ["PlainTextReader", "ReadError", "TabDelimitedReader", "get_reader", "read"]
 
-FileName = Union[str, pathlib.Path]
+FileName = str | pathlib.Path
 
 
 class ReadError(Exception):
@@ -30,11 +25,14 @@ class ReadError(Exception):
 
 
 class Reader:
-    def __init__(self, fh: TextIO, **kwargs) -> None:
+    def __init__(self, fh: TextIO, **kwargs) -> None:  # noqa: ARG002
         self.fh = fh
 
     def __iter__(self):
         return self
+
+    def __next__(self):
+        return {}
 
 
 def sniff_file(fh: IO[AnyStr], length: int = 10, offset: int = 0) -> AnyStr:
@@ -69,25 +67,24 @@ def sniff_encoding(fh: BinaryIO) -> str:
     return "utf-8"
 
 
-def get_reader(fh: TextIO) -> Type[Reader]:
+def get_reader(fh: TextIO) -> type[Reader]:
     """Get appropriate reader for the file type of `fh`"""
     sniff = sniff_file(fh)
 
     if sniff.startswith("FN "):
         return PlainTextReader
-    elif "\t" in sniff:
+    if "\t" in sniff:
         return TabDelimitedReader
-    else:
-        # XXX TODO Raised for empty file -- not very elegant
-        raise ReadError("Could not determine appropriate reader for file {}".format(fh))
+    msg = f"Could not determine appropriate reader for file {fh}"
+    raise ReadError(msg)
 
 
 def read(
-    fname: Union[FileName, Iterable[FileName]],
-    using: Optional[Type[Reader]] = None,
-    encoding: str = None,
-    **kwargs
-) -> Iterator[Dict[str, str]]:
+    fname: FileName | Iterable[FileName],
+    using: type[Reader] | None = None,
+    encoding: str | None = None,
+    **kwargs,
+) -> Iterator[dict[str, str]]:
     """Read WoS export file ('tab-delimited' or 'plain text')
 
     :param fname: name(s) of the WoS export file(s)
@@ -137,14 +134,12 @@ class TabDelimitedReader(Reader):
         super().__init__(fh, **kwargs)
         self.reader = DictReader(self.fh, delimiter="\t", **kwargs)
 
-    def __next__(self) -> Dict[str, str]:
+    def __next__(self) -> dict[str, str]:
         record = next(self.reader)
         # Since WoS files have a spurious tab at the end of each line, we
         # may get a 'ghost' None key.
-        try:
-            del record[None]  # type: ignore
-        except KeyError:
-            pass
+        with contextlib.suppress(KeyError):
+            del record[None]
         return record
 
 
@@ -165,15 +160,14 @@ class PlainTextReader(Reader):
 
         line = self._next_nonempty_line()
         if not line.startswith("FN"):
-            raise ReadError("Unknown file format")
+            msg = "Unknown file format"
+            raise ReadError(msg)
 
         line = self._next_nonempty_line()
         label, version = line.split()
         if label != "VR" or version != self.version:
-            raise ReadError(
-                "Unknown version: expected {} "
-                "but got {}".format(self.version, version)
-            )
+            msg = f"Unknown version: expected {self.version} but got {version}"
+            raise ReadError(msg)
 
     def _next_line(self) -> str:
         """Get next line as string"""
@@ -187,35 +181,31 @@ class PlainTextReader(Reader):
             line = self._next_line()
         return line
 
-    def _next_record_lines(self) -> List[str]:
+    def _next_record_lines(self) -> list[str]:
         """Gather lines that belong to one record"""
-        lines: List[str] = []
+        lines: list[str] = []
         while True:
             try:
                 line = self._next_nonempty_line()
             except StopIteration:
-                raise ReadError("Encountered EOF before 'EF' marker")
+                msg = "Encountered EOF before 'EF' marker"
+                raise ReadError(msg) from None
             if line.startswith("EF"):
                 if lines:  # We're in the middle of a record!
-                    raise ReadError(
-                        "Encountered unexpected end of file marker EF on line {}".format(
-                            self.current_line
-                        )
-                    )
-                else:  # End of file
-                    raise StopIteration
+                    msg = f"Encountered unexpected EF on line {self.current_line}"
+                    raise ReadError(msg)
+                # End of file
+                raise StopIteration
             if line.startswith("ER"):  # end of record
                 return lines
-            else:
-                lines.append(line)
+            lines.append(line)
 
-    def _format_values(self, heading: str, values: List[str]) -> str:
+    def _format_values(self, heading: str, values: list[str]) -> str:
         try:
             if has_item_per_line[heading]:  # Iterable field with one item per line
                 return "; ".join(values)
-            else:
-                return " ".join(values)
-        except KeyError:
+            return " ".join(values)
+        except KeyError as err:
             msg = (
                 "\n------------ ERROR ------------\n"
                 'Seems that the tag "{}" is new and not yet handled by the wosfile library.\n'
@@ -223,11 +213,11 @@ class PlainTextReader(Reader):
                 "  https://github.com/rafguns/wosfile/issues\n"
                 "We are sorry for the inconvenience.\n"
             )
-            raise NotImplementedError(msg.format(heading))
+            raise NotImplementedError(msg.format(heading)) from err
 
-    def __next__(self) -> Dict[str, str]:
+    def __next__(self) -> dict[str, str]:
         record = {}
-        values: List[str] = []
+        values: list[str] = []
         heading = ""
         lines = self._next_record_lines()
 
