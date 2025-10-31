@@ -22,7 +22,7 @@ classifiers = [
         "Natural Language :: English",
         "Operating System :: OS Independent",
 ]
-license = "New BSD License"
+license = "MIT"
 
 [project.optional-dependencies]
 dev = ["pytest >=7.1", "pytest-cov", "tox>=4.4"]
