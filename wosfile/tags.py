@@ -1,187 +1,212 @@
-# Source: https://webofscience.help.clarivate.com/en-us/Content/export-records.htm
-# Format: (Abbreviation, Full label, Iterable?, One item per line?)
-# - Abbreviation: WoS field tag
-# - Full label: full label as provided by Thomson Reuters (or abbreviation if
-#   not available)
-# - Splittable: whether or not the field should be split into multiple items
-# - One item per line: whether or not each item in an iterable field appears on
-#   a new line in WoS plain text format
+# ruff: noqa: E501
+import warnings
+from typing import NamedTuple
+
+
+class Tag(NamedTuple):
+    abbrev: str
+    full_label: str
+    splittable: bool
+    one_item_per_line: bool
+
+# Source: https://web.archive.org/web/20241208031254/https://webofscience.help.clarivate.com/en-us/Content/export-records.htm
 # Only the tags from the Web of Science core collection have been checked in terms of
 # the last two fields. The others are marked with a comment as unchecked.
-tags = (
-    ("A2", "Other Abstract", False, False),  # unchecked
-    ("AA", "Additional Authors", False, False),  # unchecked
-    ("AB", "Abstract / BHTD Critical Abstract", False, False),
-    ("AD", "Application Details and Date", False, False),  # unchecked
-    ("AE", "Patent Assignee", False, False),  # unchecked
-    ("AF", "Author Full Names", True, True),
-    ("AK", "Abstract (Korean)", False, False),  # unchecked
-    ("AN", "Accession Number or PubMedID", False, False),  # unchecked
-    ("AR", "Article Number", False, False),
-    ("AU", "Authors or Inventors", True, True),
-    ("AW", "Item URL", False, False),  # unchecked
-    ("BA", "Book Authors", True, True),
-    ("BD", "Broad Descriptors or Broad Terms", False, False),  # unchecked
-    ("BE", "Book Editor", True, True),
-    ("BF", "Book Author Full Names", True, True),
-    ("BN", "ISBN", False, False),
-    ("BP", "Start Page", False, False),
-    ("BS", "Book Series Subtitle", False, False),
-    ("C1", "Addresses", False, True),
-    ("C2", "Address (non-English)", False, False),  # unchecked
-    ("C3", "Author Affiliations", True, False),
-    ("CA", "Group Authors", False, False),
-    ("CC", "Concept Codes or CABI Codes", False, False),  # unchecked
-    ("CE", "Edition", False, False),  # unchecked
-    ("CH", "Chemicals & Biochemicals", False, False),  # unchecked
-    ("CI", "Derwent Compound Number", False, False),  # unchecked
-    ("CL", "Conference Location", False, False),
-    ("CN", "CAS Registry Numbers; Commercial Names; Chemical", False, False),  # unchecked
-    ("CO", "CODEN", False, False),  # unchecked
-    ("CP", "Cited Patent(s)", False, False),  # unchecked
-    ("CR", "Cited References", True, True),
-    ("CT", "Conference Title", False, False),
-    ("CY", "Conference Date", False, False),
-    ("D2", "Book DOI", False, False),
-    ("DA", "Date of Export", False, False),
-    ("DC", "Derwent Class Code(s)", False, False),  # unchecked
-    ("DE", "Author Keywords; Descriptors", True, False),
-    ("DF", "Date Filed or Submitted", False, False),  # unchecked
-    ("DI", "DOI", False, False),
-    ("DL", "DOI Link", False, False),  # unchecked
-    ("DM", "Demography", False, False),  # unchecked
-    ("DN", "DCR Number", False, False),  # unchecked
-    ("DP", "Discipline; Diseases", False, False),  # unchecked
-    ("DS", "Designated States", False, False),  # unchecked
-    ("DT", "Document Type", False, False),
-    ("DY", "Data Type", False, False),  # unchecked
-    ("EA", "Early access date; Equivalent Abstract, Editor Address", False, False),
-    ("EC", "Category", False, False),  # unchecked
-    ("ED", "Editors", False, False),
-    ("EF", "End of File", False, False),  # unchecked
-    ("EI", "eISSN", False, False),
-    ("EM", "E-mail Address", True, False),
-    ("EP", "End Page", False, False),
-    ("ER", "End of Record", False, False),  # unchecked
-    ("EY", "Early access year", False, False),
-    ("FD", "Further Application Details", False, False),  # unchecked
-    ("FN", "File Name", False, False),  # unchecked
-    ("FP", "Funding Name Preferred", False, False),  # unchecked
-    ("FS", "Field of Search", False, False),  # unchecked
-    ("FT", "Foreign Title", False, False),  # unchecked
-    ("FU", "Funding Orgs", False, False),
-    ("FX", "Funding Text", False, False),
-    ("GA", "IDS Number", False, False),
-    ("GE", "Geographic Data", False, False),  # unchecked
-    ("GI", "Grant Information", False, False),  # unchecked
-    ("GN", "Gene Name", False, False),  # unchecked
-    ("GP", "Group Authors", False, False),
-    ("GS", "Geospatial", False, False),  # unchecked
-    ("GT", "Time", False, False),  # unchecked
-    ("HC", "Highly Cited Status", False, False),
-    ("HO", "Conference Host", False, False),
-    ("HP", "Hot Paper Status", False, False),
-    ("ID", "Keywords; Identifying Codes", True, False),
-    ("IO", "Issuing Organization", False, False),  # unchecked
-    ("IP", "International Patent Classification", False, False),  # unchecked
-    ("IS", "Issue", False, False),
-    ("IV", "Investigators", False, False),  # unchecked
-    ("J9", "Journal Abbreviation", False, False),
-    ("JC", "NLM Unique ID", False, False),  # unchecked
-    ("JI", "Journal ISO Abbreviation", False, False),
-    ("LA", "Language", False, False),
-    ("LS", "Language of Summary", False, False),  # unchecked
-    ("LT", "Literature Type", False, False),  # unchecked
-    ("MA", "Meeting Abstract", False, False),
-    ("MC", "Major Concepts or Derwent Manual Code(s)", False, False),  # unchecked
-    ("ME", "Medium", False, False),  # unchecked
-    ("MH", "MeSH Terms", False, False),  # unchecked
-    ("MI", "Miscellaneous Descriptors", False, False),  # unchecked
-    ("MN", "Markush Number", False, False),  # unchecked
-    ("MQ", "Methods & Equipment", False, False),  # unchecked
-    ("NM", "Personal Name Subject", False, False),  # unchecked
-    ("NO", "Comments, Corrections, Erratum", False, False),  # unchecked
-    ("NP", "Named Person", False, False),  # unchecked
-    ("NR", "Cited Reference Count", False, False),
-    ("NT", "Notes", False, False),  # unchecked
-    ("OA", "Open Access Designations", False, False),
-    ("OB", "Record Owner", False, False),  # unchecked
-    ("OC", "Country of Original Patent Application Number", False, False),  # unchecked
-    ("OD", "Method", False, False),  # unchecked
-    ("OI", "ORCID numbers", True, False),
-    ("OP", "Original Patent Application Number", False, False),  # unchecked
-    ("OR", "Organism Descriptors; Systematics", False, False),  # unchecked
-    ("OS", "Original Source", False, False),  # unchecked
-    ("P1", "Part Number", False, False),  # unchecked
-    ("P2", "Chapter Count", False, False),
-    ("PA", "Publisher Address", False, False),
-    ("PC", "Country of Patent", False, False),  # unchecked
-    ("PD", "Publication Date; Patent Details", False, False),
-    ("PE", "Published Electronically", False, False),  # unchecked
-    ("PG", "Number of Pages", False, False),
-    ("PI", "Publisher City; Patent Priority Information", False, False),
-    ("PM", "PubMedID", False, False),
-    ("PN", "Part Number; Patent Number", False, False),
-    ("PR", "Parts, Structures & Systems; Price", False, False),  # unchecked
-    ("PS", "Pages", False, False),  # unchecked
-    ("PT", "Publication Type", False, False),
-    ("PU", "Publisher", False, False),
-    ("PV", "Place of Publication", False, False),  # unchecked
-    ("PY", "Publication Year", False, False),
-    ("RC", "Date Created, Date Completed, Date Revised", False, False),  # unchecked
-    ("RG", "Derwent Registry Number", False, False),  # unchecked
-    ("RI", "ResearcherIDs; Ring Index Number", True, False),
-    ("RP", "Reprint Address", False, False),
-    ("S1", "Source Title (non-English)", False, False),  # unchecked
-    ("SA", "Status", False, False),  # unchecked
-    ("SC", "Research Areas", True, False),
-    ("SD", "Molecular Sequence Data", False, False),  # unchecked
-    ("SE", "Book Series Title; Series", False, False),
-    ("SF", "Space Flight Mission", False, False),  # unchecked
-    ("SI", "Special Issue", False, False),
-    ("SN", "ISSN", False, False),
-    ("SO", "Source Title", False, False),
-    ("SP", "Conference Sponsors", False, False),
-    ("SS", "FSTA Section/Subsection; Citation Subset", False, False),  # unchecked
-    ("ST", "Super Taxa", False, False),  # unchecked
-    ("SU", "Supplement; Research Area", False, False),
-    ("TA", "Taxonomic Data", False, False),  # unchecked
-    ("TC", "Times Cited Count", False, False),
-    ("TF", "Technology Focus Abstract", False, False),  # unchecked
-    ("TI", "Article Title", False, False),
-    ("TL", "Country of Translation", False, False),  # unchecked
-    ("TM", "Geologic Time Data", False, False),  # unchecked
-    ("TN", "Taxa Notes", False, False),  # unchecked
-    ("TR", "Translators", False, False),  # unchecked
-    ("TS", "Translated Source", False, False),  # unchecked
-    ("U1", "180 Day Usage Count", False, False),
-    ("U2", "Since 2013 Usage Count", False, False),
-    ("UC", "Document Selection URL", False, False),  # unchecked
-    ("UR", "URL", False, False),  # unchecked
-    ("UT", "Accession Number", False, False),
-    ("VL", "Volume", False, False),
-    ("VN", "Version", False, False),  # unchecked
-    ("VR", "Version Number", False, False),  # unchecked
-    ("WC", "Web of Science Subject Categories", True, False),
-    ("WE", "Web of Science Index", True, False),
-    ("WP", "Publisher Web Address", False, False),  # unchecked
-    ("X1", "Article Title (non-English)", False, False),  # unchecked
-    ("X2", "Article Title (Transliterated)", False, False),  # unchecked
-    ("X4", "Spanish Abstract", False, False),  # unchecked
-    ("X5", "Spanish Author Keywords", False, False),  # unchecked
-    ("Y1", "Portuguese Document Title", False, False),  # unchecked
-    ("Y4", "Portuguese Abstract", False, False),  # unchecked
-    ("Y5", "Author Keywords (non-English); Portuguese Author Keywords", False, False),  # unchecked
-    ("Z1", "Article Title (Other Languages)", False, False),  # unchecked
-    ("Z2", "Authors (non-English)", False, False),  # unchecked
-    ("Z3", "Publication Name (Chinese)", False, False),  # unchecked
-    ("Z4", "Abstract (non-English)", False, False),  # unchecked
-    ("Z5", "Author Keywords (non-English)", False, False),  # unchecked
-    ("Z6", "Author Address (non-English)", False, False),  # unchecked
-    ("Z7", "E-mail Address (non-English)", False, False),  # unchecked
-    ("Z8", "CSCD Times Cited Count", False, False),  # unchecked
-    ("Z9", "Times Cited, All Databases", False, False),
-    ("ZK", "Author Keywords (Korean)", False, False),  # unchecked
-)
-is_splittable = {abbr: iterable for abbr, _, iterable, _ in tags}
-has_item_per_line = {abbr: item_per_line for abbr, _, _, item_per_line in tags}
+tags = [
+    Tag("A2", "Other Abstract", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("AA", "Additional Authors", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("AB", "Abstract / BHTD Critical Abstract", splittable=False, one_item_per_line=False),
+    Tag("AD", "Application Details and Date", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("AE", "Patent Assignee", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("AF", "Author Full Names", splittable=True, one_item_per_line=True),
+    Tag("AK", "Abstract (Korean)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("AN", "Accession Number or PubMedID", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("AR", "Article Number", splittable=False, one_item_per_line=False),
+    Tag("AU", "Authors or Inventors", splittable=True, one_item_per_line=True),
+    Tag("AW", "Item URL", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("BA", "Book Authors", splittable=True, one_item_per_line=True),
+    Tag("BD", "Broad Descriptors or Broad Terms", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("BE", "Book Editor", splittable=True, one_item_per_line=True),
+    Tag("BF", "Book Author Full Names", splittable=True, one_item_per_line=True),
+    Tag("BN", "ISBN", splittable=False, one_item_per_line=False),
+    Tag("BP", "Start Page", splittable=False, one_item_per_line=False),
+    Tag("BS", "Book Series Subtitle", splittable=False, one_item_per_line=False),
+    Tag("C1", "Addresses", splittable=False, one_item_per_line=True),
+    Tag("C2", "Address (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("C3", "Author Affiliations", splittable=True, one_item_per_line=False),
+    Tag("CA", "Group Authors", splittable=False, one_item_per_line=False),
+    Tag("CC", "Concept Codes or CABI Codes", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CE", "Edition", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CH", "Chemicals & Biochemicals", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CI", "Derwent Compound Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CL", "Conference Location", splittable=False, one_item_per_line=False),
+    Tag("CN", "CAS Registry Numbers; Commercial Names; Chemical", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CO", "CODEN", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CP", "Cited Patent(s)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("CR", "Cited References", splittable=True, one_item_per_line=True),
+    Tag("CT", "Conference Title", splittable=False, one_item_per_line=False),
+    Tag("CY", "Conference Date", splittable=False, one_item_per_line=False),
+    Tag("D2", "Book DOI", splittable=False, one_item_per_line=False),
+    Tag("DA", "Date of Export", splittable=False, one_item_per_line=False),
+    Tag("DC", "Derwent Class Code(s)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DE", "Author Keywords; Descriptors", splittable=True, one_item_per_line=False),
+    Tag("DF", "Date Filed or Submitted", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DI", "DOI", splittable=False, one_item_per_line=False),
+    Tag("DL", "DOI Link", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DM", "Demography", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DN", "DCR Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DP", "Discipline; Diseases", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DS", "Designated States", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("DT", "Document Type", splittable=False, one_item_per_line=False),
+    Tag("DY", "Data Type", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("EA", "Early access date; Equivalent Abstract, Editor Address", splittable=False, one_item_per_line=False),
+    Tag("EC", "Category", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("ED", "Editors", splittable=False, one_item_per_line=False),
+    Tag("EF", "End of File", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("EI", "eISSN", splittable=False, one_item_per_line=False),
+    Tag("EM", "E-mail Address", splittable=True, one_item_per_line=False),
+    Tag("EP", "End Page", splittable=False, one_item_per_line=False),
+    Tag("ER", "End of Record", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("EY", "Early access year", splittable=False, one_item_per_line=False),
+    Tag("FD", "Further Application Details", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("FN", "File Name", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("FP", "Funding Name Preferred", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("FS", "Field of Search", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("FT", "Foreign Title", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("FU", "Funding Orgs", splittable=False, one_item_per_line=False),
+    Tag("FX", "Funding Text", splittable=False, one_item_per_line=False),
+    Tag("GA", "IDS Number", splittable=False, one_item_per_line=False),
+    Tag("GE", "Geographic Data", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("GI", "Grant Information", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("GN", "Gene Name", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("GP", "Group Authors", splittable=False, one_item_per_line=False),
+    Tag("GS", "Geospatial", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("GT", "Time", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("HC", "Highly Cited Status", splittable=False, one_item_per_line=False),
+    Tag("HO", "Conference Host", splittable=False, one_item_per_line=False),
+    Tag("HP", "Hot Paper Status", splittable=False, one_item_per_line=False),
+    Tag("ID", "Keywords; Identifying Codes", splittable=True, one_item_per_line=False),
+    Tag("IO", "Issuing Organization", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("IP", "International Patent Classification", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("IS", "Issue", splittable=False, one_item_per_line=False),
+    Tag("IV", "Investigators", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("J9", "Journal Abbreviation", splittable=False, one_item_per_line=False),
+    Tag("JC", "NLM Unique ID", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("JI", "Journal ISO Abbreviation", splittable=False, one_item_per_line=False),
+    Tag("LA", "Language", splittable=False, one_item_per_line=False),
+    Tag("LS", "Language of Summary", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("LT", "Literature Type", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("MA", "Meeting Abstract", splittable=False, one_item_per_line=False),
+    Tag("MC", "Major Concepts or Derwent Manual Code(s)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("ME", "Medium", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("MH", "MeSH Terms", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("MI", "Miscellaneous Descriptors", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("MN", "Markush Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("MQ", "Methods & Equipment", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("NM", "Personal Name Subject", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("NO", "Comments, Corrections, Erratum", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("NP", "Named Person", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("NR", "Cited Reference Count", splittable=False, one_item_per_line=False),
+    Tag("NT", "Notes", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("OA", "Open Access Designations", splittable=False, one_item_per_line=False),
+    Tag("OB", "Record Owner", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("OC", "Country of Original Patent Application Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("OD", "Method", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("OI", "ORCID numbers", splittable=True, one_item_per_line=False),
+    Tag("OP", "Original Patent Application Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("OR", "Organism Descriptors; Systematics", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("OS", "Original Source", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("P1", "Part Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("P2", "Chapter Count", splittable=False, one_item_per_line=False),
+    Tag("PA", "Publisher Address", splittable=False, one_item_per_line=False),
+    Tag("PC", "Country of Patent", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("PD", "Publication Date; Patent Details", splittable=False, one_item_per_line=False),
+    Tag("PE", "Published Electronically", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("PG", "Number of Pages", splittable=False, one_item_per_line=False),
+    Tag("PI", "Publisher City; Patent Priority Information", splittable=False, one_item_per_line=False),
+    Tag("PM", "PubMedID", splittable=False, one_item_per_line=False),
+    Tag("PN", "Part Number; Patent Number", splittable=False, one_item_per_line=False),
+    Tag("PR", "Parts, Structures & Systems; Price", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("PS", "Pages", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("PT", "Publication Type", splittable=False, one_item_per_line=False),
+    Tag("PU", "Publisher", splittable=False, one_item_per_line=False),
+    Tag("PV", "Place of Publication", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("PY", "Publication Year", splittable=False, one_item_per_line=False),
+    Tag("RC", "Date Created, Date Completed, Date Revised", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("RG", "Derwent Registry Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("RI", "ResearcherIDs; Ring Index Number", splittable=True, one_item_per_line=False),
+    Tag("RP", "Reprint Address", splittable=False, one_item_per_line=False),
+    Tag("S1", "Source Title (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("SA", "Status", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("SC", "Research Areas", splittable=True, one_item_per_line=False),
+    Tag("SD", "Molecular Sequence Data", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("SE", "Book Series Title; Series", splittable=False, one_item_per_line=False),
+    Tag("SF", "Space Flight Mission", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("SI", "Special Issue", splittable=False, one_item_per_line=False),
+    Tag("SN", "ISSN", splittable=False, one_item_per_line=False),
+    Tag("SO", "Source Title", splittable=False, one_item_per_line=False),
+    Tag("SP", "Conference Sponsors", splittable=False, one_item_per_line=False),
+    Tag("SS", "FSTA Section/Subsection; Citation Subset", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("ST", "Super Taxa", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("SU", "Supplement; Research Area", splittable=False, one_item_per_line=False),
+    Tag("TA", "Taxonomic Data", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("TC", "Times Cited Count", splittable=False, one_item_per_line=False),
+    Tag("TF", "Technology Focus Abstract", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("TI", "Article Title", splittable=False, one_item_per_line=False),
+    Tag("TL", "Country of Translation", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("TM", "Geologic Time Data", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("TN", "Taxa Notes", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("TR", "Translators", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("TS", "Translated Source", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("U1", "180 Day Usage Count", splittable=False, one_item_per_line=False),
+    Tag("U2", "Since 2013 Usage Count", splittable=False, one_item_per_line=False),
+    Tag("UC", "Document Selection URL", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("UR", "URL", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("UT", "Accession Number", splittable=False, one_item_per_line=False),
+    Tag("VL", "Volume", splittable=False, one_item_per_line=False),
+    Tag("VN", "Version", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("VR", "Version Number", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("WC", "Web of Science Subject Categories", splittable=True, one_item_per_line=False),
+    Tag("WE", "Web of Science Index", splittable=True, one_item_per_line=False),
+    Tag("WP", "Publisher Web Address", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("X1", "Article Title (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("X2", "Article Title (Transliterated)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("X4", "Spanish Abstract", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("X5", "Spanish Author Keywords", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Y1", "Portuguese Document Title", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Y4", "Portuguese Abstract", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Y5", "Author Keywords (non-English); Portuguese Author Keywords", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z1", "Article Title (Other Languages)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z2", "Authors (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z3", "Publication Name (Chinese)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z4", "Abstract (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z5", "Author Keywords (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z6", "Author Address (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z7", "E-mail Address (non-English)", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z8", "CSCD Times Cited Count", splittable=False, one_item_per_line=False),  # unchecked
+    Tag("Z9", "Times Cited, All Databases", splittable=False, one_item_per_line=False),
+    Tag("ZK", "Author Keywords (Korean)", splittable=False, one_item_per_line=False),  # unchecked
+]
+_is_splittable = {abbrev: iterable for abbrev, _, iterable, _ in tags}
+_has_item_per_line = {abbrev: item_per_line for abbrev, _, _, item_per_line in tags}
+
+
+def is_splittable(abbrev: str) -> bool:
+    try:
+        return _is_splittable[abbrev]
+    except KeyError:
+        warnings.warn(
+            f"Unknown code {abbrev} will be treated as non-splittable", stacklevel=2
+        )
+        return False
+
+
+def has_item_per_line(abbrev: str) -> bool:
+    try:
+        return _has_item_per_line[abbrev]
+    except KeyError:
+        warnings.warn(
+            f"Unknown code {abbrev} will be treated as not having an item per line",
+            stacklevel=2
+        )
+        return False

@@ -201,19 +201,7 @@ class PlainTextReader(Reader):
             lines.append(line)
 
     def _format_values(self, heading: str, values: list[str]) -> str:
-        try:
-            if has_item_per_line[heading]:  # Iterable field with one item per line
-                return "; ".join(values)
-            return " ".join(values)
-        except KeyError as err:
-            msg = (
-                "\n------------ ERROR ------------\n"
-                'Seems that the tag "{}" is new and not yet handled by the wosfile library.\n'
-                "Please report this error:\n"
-                "  https://github.com/rafguns/wosfile/issues\n"
-                "We are sorry for the inconvenience.\n"
-            )
-            raise NotImplementedError(msg.format(heading)) from err
+        return "; ".join(values) if has_item_per_line(heading) else " ".join(values)
 
     def __next__(self) -> dict[str, str]:
         record = {}

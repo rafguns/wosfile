@@ -97,10 +97,16 @@ class TestPlainTextReader:
             list(r)
 
     def test_unknown_tag(self):
-        f = StringIO(preamble_s + "PT abc\n\nQQ x\nER\nEF")
+        f = StringIO(
+            preamble_s + "PT abc\nSO J.Whatever\nQQ Here\n   be\n   dragons\nER\nEF"
+        )
+
         r = PlainTextReader(f)
-        with pytest.raises(NotImplementedError):
-            list(r)
+        expected = {"PT": "abc", "SO": "J.Whatever", "QQ": "Here be dragons"}
+        with pytest.warns(
+            UserWarning, match="will be treated as not having an item per line"
+        ):
+            assert next(r) == expected
 
     def test_ignore_empty_lines(self):
         f = StringIO(preamble_s + "PT abc\n\nAU xyz\nER\nEF")
@@ -111,8 +117,7 @@ class TestPlainTextReader:
 
     def test_multiple_records(self):
         f = StringIO(
-            preamble_s + "PT abc\nAU xyz\nER\n\nPT abc2\n AU xyz2\n"
-            "AB abstract\nER\nEF"
+            preamble_s + "PT abc\nAU xyz\nER\n\nPT abc2\n AU xyz2\nAB abstract\nER\nEF"
         )
         r = PlainTextReader(f)
 
@@ -136,9 +141,7 @@ class TestPlainTextReader:
         assert next(r) == expected
 
     def test_multiline_fields_nosplit(self):
-        f = StringIO(
-            preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes\nER\nEF"
-        )
+        f = StringIO(preamble_s + "PT abc\nSC Here; there\n  be dragons; Yes\nER\nEF")
 
         r = PlainTextReader(f)
         expected = {"PT": "abc", "SC": "Here; there be dragons; Yes"}

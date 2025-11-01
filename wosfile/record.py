@@ -37,7 +37,7 @@ class Record(dict):
         for field_name, value in wos_data.items():
             if self.skip_empty and not value:
                 continue
-            if is_splittable[field_name]:
+            if is_splittable(field_name):
                 self[field_name] = split_by(value, ";")
             else:  # No parsing needed
                 self[field_name] = value
