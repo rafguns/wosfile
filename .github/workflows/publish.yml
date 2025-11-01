@@ -1,58 +1,32 @@
-name: Publish Python Package
+name: "Publish package to PyPI"
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v0.1.0
+      - v*
 
 jobs:
-  test:
+  run:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+      contents: read
     steps:
-    - uses: actions/checkout@v5
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python-version }}
-    - uses: actions/cache@v4
-      name: Configure pip caching
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip pytest
-        pip install -e .
-    - name: Run tests
-      run: |
-        pytest
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [test]
-    steps:
-    - uses: actions/checkout@v5
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.14'
-    - uses: actions/cache@v4
-      name: Configure pip caching
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-publish-pip-${{ hashFiles('**/setup.py') }}
-        restore-keys: |
-          ${{ runner.os }}-publish-pip-
-    - name: Install dependencies
-      run: |
-        pip install setuptools wheel twine
-    - name: Publish
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install Python 3.14
+        run: uv python install 3.14
+      - name: Build
+        run: uv build
+      # Check that basic features work and we didn't miss to include crucial files
+      - name: Smoke test (wheel)
+        run: uv run --isolated --no-project --with dist/*.whl tests/smoketest.py
+      - name: Smoke test (source distribution)
+        run: uv run --isolated --no-project --with dist/*.tar.gz tests/smoketest.py
+      - name: Publish
+        run: uv publish
