@@ -165,7 +165,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.4.2"
+version = "9.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
